@@ -26,6 +26,30 @@
         <!-- script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script-->
         <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
         <script>
+        
+        // Timer variables
+        var timers = new Array();
+        var timerStateArray = new Array();
+        var timerFrame = 1;
+        timerStateArray[1] = 0;
+        
+        function doTimer(cell,speed,htmlDOMelementId) { timedCall(cell,speed,htmlDOMelementId); }
+         // Main timing loop calls itself
+         function timedCall(cell,speed,htmlDOMelementId) {
+             console.log(timerFrame);
+             if(timerFrame < 1) {
+                 document.getElementById('phases-t1').bgColor='#d0d0d0';
+             } else {
+                 document.getElementById('phases-t1').bgColor='#ffff50';
+             }
+             timerFrame = 1 - timerFrame;
+        	 timers[cell] = setTimeout(function() { timedCall(cell,speed,htmlDOMelementId); }, speed); // no speed = max speed
+         }
+         
+         function load() {
+        	 doTimer(1,500,2);
+         }
+        
         $.ajax({
         	  url: "/api",
         	  data: {
@@ -39,7 +63,7 @@
         </script>
     
 </head>
-<body>
+<body onload="javascript:load();">
     <div id="north">north</div>
     <div id="center">center</div>
     <div id="d2>">d2</div>
