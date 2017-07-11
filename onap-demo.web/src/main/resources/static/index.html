@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ONAP vFirewall Demo</title>
+    <title>ONAP vFW Dashboard</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <style>
@@ -34,21 +34,23 @@
         timerStateArray[1] = 0;
         
         function doTimer(cell,speed,htmlDOMelementId) { timedCall(cell,speed,htmlDOMelementId); }
-         // Main timing loop calls itself
-         function timedCall(cell,speed,htmlDOMelementId) {
-             console.log(timerFrame);
-             if(timerFrame < 1) {
+        // Main timing loop calls itself
+        function timedCall(cell,speed,htmlDOMelementId) {
+            // update all rest listeners
+        	
+        	
+        	if(timerFrame < 1) {
                  document.getElementById('phases-t1').bgColor='#d0d0d0';
              } else {
-                 document.getElementById('phases-t1').bgColor='#ffff50';
+                 document.getElementById('phases-t1').bgColor='#ffff40';
              }
              timerFrame = 1 - timerFrame;
         	 timers[cell] = setTimeout(function() { timedCall(cell,speed,htmlDOMelementId); }, speed); // no speed = max speed
-         }
+        }
          
-         function load() {
-        	 doTimer(1,500,2);
-         }
+        function load() {
+        	 doTimer(1, 2000, 2);
+        }
         
         $.ajax({
         	  url: "/api",
@@ -56,17 +58,22 @@
         	    zipcode: 97201
         	  },
         	  success: function( result ) {
-        		console.log(result);  
-        	    $( "#north" ).html( "<strong>" + result + "</strong> degrees" );
+        		console.log("/api call: " + result);  
+        	    $( "#center" ).html( "<strong>" + result + "</strong> degrees" );
         	  }
         	});
         </script>
     
 </head>
 <body onload="javascript:load();">
-    <div id="north">north</div>
+    <div id="north">
+        <table><tr>
+        <td><a href="http://wiki.onap.org/display/DW/Developer+Wiki"><img alt="ONAP vFirewall Demo" src="textures/sprites/logo_onap_4x.png" width="160"></a></td>
+        <td style="font-weight:bold; text-align: center">&nbsp;Dashboard</td>
+        </tr></table>
+    </div>
     <div id="center">center</div>
-    <div id="d2>">d2</div>
+    <div id="d2">d2</div>
     <div id="d3">
     <script src="https://fb.me/react-15.0.1.js"></script>
     <script src="https://fb.me/react-dom-15.0.1.js"></script>
@@ -75,34 +82,37 @@
     <script src="scripts.js" type="text/babel"></script>
     
     <!--  div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - ConvexGeometry</div-->
-        <script src="../build/three.js"></script>
-        <script src="js/controls/OrbitControls.js"></script>
-        <script src="js/QuickHull.js"></script>
-        <script src="js/geometries/ConvexGeometry.js"></script>
-        <script src="js/Detector.js"></script>
-        <script src="js/libs/stats.min.js"></script>
+    <script src="../build/three.js"></script>
+    <script src="js/controls/OrbitControls.js"></script>
+    <script src="js/QuickHull.js"></script>
+    <script src="js/geometries/ConvexGeometry.js"></script>
+    <script src="js/Detector.js"></script>
+    <script src="js/libs/stats.min.js"></script>
 
-        <script>
-            if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-            var group, camera, scene, renderer, frameStep, maxFrame;
-            var cube1material, cube1state, texture1, texture2, aspect, gridOffset, layerOffset;
-            var mouseObjects = []; // for intersections
-            var count = 0;
-            maxFrame = 20; frameStep = 10;
-            aspect = 2;
-            gridOffset = 0.75;
-            layerOffset = gridOffset * 5;
-            cube1state = 1;
-            init();
-            animate();
-            //renderer.render( scene, camera );
-
+    <script>
+        if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+        var group, camera, scene, renderer, frameStep, maxFrame;
+        var cube1material, cube1state, texture1, texture2, aspect, gridOffset, layerOffset;
+        var mouseObjects = []; // for intersections
+        var count = 0;
+        var colorRed = 0xff0050;
+        var colorGreen = 0xc0ff30;
+        var colorBlue = 0x20c0ff;
+        var colorYellow = 0xffff40;
+        maxFrame = 40; frameStep = 10;
+        aspect = 2;
+        gridOffset = 0.75;
+        layerOffset = gridOffset * 5;
+        cube1state = 1;
+        init();
+        animate();
             
             function init() {
                 scene = new THREE.Scene();
                 renderer = new THREE.WebGLRenderer( { antialias: true } );
                 renderer.setPixelRatio( window.devicePixelRatio );
-                renderer.setSize( window.innerWidth / (3/2), window.innerHeight / ((3/2) * aspect) );
+                //renderer.setSize( window.innerWidth / (3/2), window.innerHeight / ((3/2) * aspect) );
+                renderer.setSize( window.innerWidth, window.innerHeight / aspect );
                 renderer.setClearColor(0xe0e0e0, 1); // bg
                 document.body.appendChild( renderer.domElement );
 
@@ -160,6 +170,7 @@
                 mesh.material.side = THREE.FrontSide; // front faces
                 mesh.renderOrder = 1;
                 mesh.position.y = (gridOffset / 4) + layerOffset;
+                mesh.name = "service-firewall";
                 group.add( mesh );
                 mouseObjects.push(mesh);
                 
@@ -171,8 +182,9 @@
                 var vmGeo;
                 var meshMaterialVM;
                 var meshGeometryVM;
+                var vmNames = ["generator", "firewall", "sink"];
                 var vmSize = 1;
-                for(var vm=-1; vm<2;vm++){
+                for(var vm=0; vm<3; vm++){
                     vmGeo = new THREE.BoxGeometry( 1*gridOffset,0.5*gridOffset,1*gridOffset);
                     meshMaterialVM = new THREE.MeshLambertMaterial( { color: 0xdfdfff, opacity: 0.9, transparent: false} );
                     meshGeometryVM = new THREE.ConvexBufferGeometry(vmGeo.vertices );
@@ -180,35 +192,57 @@
                     meshVM.material.side = THREE.FrontSide; // front faces
                     meshVM.renderOrder = 1;
                     meshVM.position.y = (gridOffset / 4) * vmSize;
-                    meshVM.position.x = gridOffset + ((vm * gridOffset) * 6) - gridOffset;
+                    meshVM.position.x = gridOffset + (((vm - 1) * gridOffset) * 6) - gridOffset;
+                    //meshVM.userData.id = "vm" + vm;
+                    meshVM.name = vmNames[vm];
                     group.add( meshVM );
                     mouseObjects.push(meshVM);
                 }
-
+                
+                // draw edges
+                // https://stackoverflow.com/questions/18286837/how-to-chain-two-geometric-objects-using-three-js
+                var vmFromNames = ["generator", "firewall", "service-firewall"];
+                var vmToNames = ["firewall", "sink", "firewall"];
+                for(var vm=0; vm<vmFromNames.length; vm++) {
+                    var startObject = scene.getObjectByName(vmFromNames[vm]);
+                    var endObject = scene.getObjectByName(vmToNames[vm]);
+                    var startPoint = new THREE.Vector3(startObject.position.x, startObject.position.y, startObject.position.z);
+                    var endPoint   = new THREE.Vector3(endObject.position.x, endObject.position.y, endObject.position.z);
+                    var direction = new THREE.Vector3().subVectors(endPoint, startPoint).normalize();
+                    var arrow = new THREE.ArrowHelper(direction, startPoint, startPoint.distanceTo(endPoint), colorRed );
+                    arrow.line.material.linewidth = 4; // no effect on windows
+                    var vName = "edge-" + vmFromNames[vm] + "-" + vmToNames[vm];
+                    console.log(vName);
+                    arrow.name = vName;
+                    group.add(arrow);
+                }
                 
                 // layers
-                var oz = 10 * gridOffset;
+                var oz = 15 * gridOffset;
                 var oy = 0.1;
-                var ox = 20 * gridOffset;
+                var ox = 30 * gridOffset;
+                var layerColor = 0xccccff;
                 var layer0Geo = new THREE.BoxGeometry( ox,oy,oz );
-                var layer0Material = new THREE.MeshLambertMaterial( { color: 0xccccff, opacity: 0.2, transparent: true} );
+                var layer0Material = new THREE.MeshLambertMaterial( { color: 0xffccff, opacity: 0.2, transparent: true} );
                 var layer0Mesh = new THREE.Mesh( layer0Geo, layer0Material);
                 layer0Mesh.position.y = layerOffset;
                 group.add(layer0Mesh);
 
                 var layer1Geo = new THREE.BoxGeometry( ox,oy,oz );
-                var layer1Material = new THREE.MeshLambertMaterial( { color: 0xccccff, opacity: 0.2, transparent: true} );
+                var layer1Material = new THREE.MeshLambertMaterial( { color: layerColor, opacity: 0.2, transparent: true} );
                 var layer1Mesh = new THREE.Mesh( layer1Geo, layer1Material);
                 layer1Mesh.position.y = 0;                
                 group.add(layer1Mesh);
                 
                 var layer2Geo = new THREE.BoxGeometry( ox,oy,oz );
-                var layer2Material = new THREE.MeshLambertMaterial( { color: 0xccccff, opacity: 0.2, transparent: true} );
+                var layer2Material = new THREE.MeshLambertMaterial( { color: layerColor, opacity: 0.2, transparent: true} );
                 var layer2Mesh = new THREE.Mesh( layer2Geo, layer2Material);
                 layer2Mesh.position.y = -layerOffset;                
                 group.add(layer2Mesh);
                 
                 
+                var textOffsetY = -2 * gridOffset;
+                var color = 0x10508f;      
                 // add text
                 // from https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_text_shapes.html
                 var floader = new THREE.FontLoader();
@@ -217,15 +251,15 @@
                 floader.load( 'fonts/helvetiker_regular.typeface.json', function(font) {
                     var xMid, text;
                     var textShape = new THREE.BufferGeometry();
-                    var color = 0x006699;
+                    
                     var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
                     var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
-                    var message = "service layer";
+                    var message = "Services";
                     var shapes = font.generateShapes( message, 0.5, 0.1 );
                     var geometry = new THREE.ShapeGeometry( shapes );
                     geometry.computeBoundingBox();
                     xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
-                    geometry.translate( xMid, 5 * gridOffset, 0 );
+                    geometry.translate( xMid, 5 * gridOffset, textOffsetY);
                     // make shape ( N.B. edge view not visible )
                     textShape.fromGeometry( geometry );
                     text = new THREE.Mesh( textShape, matLite );
@@ -252,20 +286,19 @@
                         //lineText.add( lineMesh );
                     }
                     scene.add( lineText );
-                } ); //end load function
- 
+                } ); 
+        
                 floader.load( 'fonts/helvetiker_regular.typeface.json', function(font) {
                     var xMid, text;
                     var textShape = new THREE.BufferGeometry();
-                    var color = 0x006699;
                     var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
                     var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
-                    var message = "virtual machine layer";
+                    var message = "Virtual Machines";
                     var shapes = font.generateShapes( message, 0.5, 0.1 );
                     var geometry = new THREE.ShapeGeometry( shapes );
                     geometry.computeBoundingBox();
                     xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
-                    geometry.translate( xMid, 0 * gridOffset, 0 );
+                    geometry.translate( xMid, 0 * gridOffset, textOffsetY );
                     // make shape ( N.B. edge view not visible )
                     textShape.fromGeometry( geometry );
                     text = new THREE.Mesh( textShape, matLite );
@@ -298,15 +331,14 @@
                 floader.load( 'fonts/helvetiker_regular.typeface.json', function(font) {
                     var xMid, text;
                     var textShape = new THREE.BufferGeometry();
-                    var color = 0x006699;
                     var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
                     var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
-                    var message = "ONAP layer";
+                    var message = "Networks";
                     var shapes = font.generateShapes( message, 0.5, 0.1 );
                     var geometry = new THREE.ShapeGeometry( shapes );
                     geometry.computeBoundingBox();
                     xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
-                    geometry.translate( xMid, -5 * gridOffset, 0 );
+                    geometry.translate( xMid, -5 * gridOffset, textOffsetY);
                     // make shape ( N.B. edge view not visible )
                     textShape.fromGeometry( geometry );
                     text = new THREE.Mesh( textShape, matLite );
@@ -334,9 +366,6 @@
                     }
                     scene.add( lineText );
                 } ); //end load function
-
-                
-                
                 window.addEventListener( 'resize', onWindowResize, false );
             }
 
@@ -365,6 +394,8 @@
                        document.getElementById('phases-t4').bgColor='#ff0050';
                        document.getElementById('phases-t5').bgColor='#ff0050';
             		   document.getElementById('phases-t6').bgColor='#ff0050';
+            		   scene.getObjectByName("edge-firewall-sink").line.material.color.set(0xff0060);
+            		   scene.getObjectByName("edge-firewall-sink").cone.material.color.set(0xff0060);
             	   } else {
             		   //console.log("flash");
             		   //cube1material.opacity = 0.1;   
@@ -373,6 +404,8 @@
                        document.getElementById('phases-t4').bgColor='#d0d0d0';
                        document.getElementById('phases-t5').bgColor='#d0d0d0';
                        document.getElementById('phases-t6').bgColor='#d0d0d0';
+                       scene.getObjectByName("edge-firewall-sink").line.material.color.set(0xc0ff40);
+                       scene.getObjectByName("edge-firewall-sink").cone.material.color.set(0xc0ff40);
             	   } 
             	cube1state = 1 - cube1state;
             }
@@ -410,6 +443,7 @@
 
         <div id="south">
     <table id="phases">
+        <tr><td id="phases-t0" style="font-weight:bold; text-align: center">Demo Phase:</td>
         <tr><td id="phases-t1" bgcolor="#ffff50">Initial Config</td>
         <tr><td id="phases-t2" bgcolor="#20c0ff">Service Creation</td></tr>
         <tr><td id="phases-t3" bgcolor="#c0ff30">VNF creation</td></tr>

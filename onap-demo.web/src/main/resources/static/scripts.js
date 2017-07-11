@@ -1,1 +1,2 @@
-ReactDOM.render(<h1>Hello World</h1>, document.getElementById('north'));
+// disable react for now
+//ReactDOM.render(<h2>ONAP vFW Dashboard</h2>, document.getElementById('north'));
