@@ -18,7 +18,8 @@ public class JAXRSClient {
 
 	private static final String HTTP_PORT = "http://biometric.elasticbeanstalk.com/rest/read";
     
-	public void run(boolean isSSL) {
+	public String run(boolean isSSL) {
+		String val = null;
 		Client client = null;
 		//Long id = 1L;
 		WebTarget latestTarget = null;
@@ -29,7 +30,7 @@ public class JAXRSClient {
 		// https://obrienlabs.elasticbeanstalk.com/rest/read/geohashcount/f241b3
 		try {
 			WebTarget finalTarget = null;
-			String prefix = "f241brnekx3";
+			String prefix = "f241brnekx";
 			String record = null;
 			int id=0;
 				try { Thread.sleep(1); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
@@ -37,13 +38,15 @@ public class JAXRSClient {
 				long before = System.currentTimeMillis();
 				record = finalTarget.request().get(String.class);//Long.class);//Record.class);
 				long after = System.currentTimeMillis();
-				System.out.println(new StringBuffer(prefix + String.valueOf('0')).append(":").append(record)
-						.append(" : ").append(String.valueOf(after - before)).toString());
+				val = new StringBuffer(prefix + String.valueOf('0')).append(";").append(record)
+						.append(" ; ").append(String.valueOf(after - before)).toString();
+				System.out.println(val);
 		} catch (Exception e)  {
 			e.printStackTrace();
 		} finally {
 			client.close();
 		}
+		return val;
 	}
 	
 	public static void main(String[] args) {

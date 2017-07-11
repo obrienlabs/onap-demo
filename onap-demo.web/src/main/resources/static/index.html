@@ -37,7 +37,16 @@
         // Main timing loop calls itself
         function timedCall(cell,speed,htmlDOMelementId) {
             // update all rest listeners
-        	
+            $.ajax({
+              url: "/api",
+              //data: {
+              //  code: f241brnekx
+              //},
+              success: function( result ) {
+                console.log("/api call: " + result);  
+                $( "#center" ).html( "<strong>" + result.content + "</strong>" );
+              }
+            });        	
         	
         	if(timerFrame < 1) {
                  document.getElementById('phases-t1').bgColor='#d0d0d0';
@@ -51,17 +60,7 @@
         function load() {
         	 doTimer(1, 2000, 2);
         }
-        
-        $.ajax({
-        	  url: "/api",
-        	  data: {
-        	    zipcode: 97201
-        	  },
-        	  success: function( result ) {
-        		console.log("/api call: " + result);  
-        	    $( "#center" ).html( "<strong>" + result + "</strong> degrees" );
-        	  }
-        	});
+
         </script>
     
 </head>
@@ -199,7 +198,7 @@
                     mouseObjects.push(meshVM);
                 }
                 
-                // draw edges
+                // edges
                 // https://stackoverflow.com/questions/18286837/how-to-chain-two-geometric-objects-using-three-js
                 var vmFromNames = ["generator", "firewall", "service-firewall"];
                 var vmToNames = ["firewall", "sink", "firewall"];

@@ -4,15 +4,12 @@ import org.onap.demo.integration.JAXRSClient;
 
 public class Api {
 
-    private final long id;
-    private final String content;
+    private long id;
+    private String content;
 
     public Api(long id, String content) {
         this.id = id;
         this.content = content;
-        
-		JAXRSClient client = new JAXRSClient();
-		client.run(false);
     }
 
     public long getId() {
@@ -20,6 +17,8 @@ public class Api {
     }
 
     public String getContent() {
+    	JAXRSClient client = new JAXRSClient();
+		content = client.run(false);
         return content;
     }
 
