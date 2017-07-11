@@ -7,7 +7,7 @@
         <style>
             body {
                 font-family: Monospace;
-                background-color: #aaa;
+                background-color: #ddd;
                 margin: 0px;
                 overflow: hidden;
             }
@@ -23,13 +23,26 @@
                 color: #fff;
             }
         </style>
+        <!-- script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script-->
+        <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+        <script>
+        $.ajax({
+        	  url: "/api",
+        	  data: {
+        	    zipcode: 97201
+        	  },
+        	  success: function( result ) {
+        		console.log(result);  
+        	    $( "#north" ).html( "<strong>" + result + "</strong> degrees" );
+        	  }
+        	});
+        </script>
     
 </head>
 <body>
     <div id="north">north</div>
     <div id="center">center</div>
     <div id="d2>">d2</div>
-    <table><tr><td>
     <div id="d3">
     <script src="https://fb.me/react-15.0.1.js"></script>
     <script src="https://fb.me/react-dom-15.0.1.js"></script>
@@ -49,6 +62,8 @@
             if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
             var group, camera, scene, renderer, frameStep, maxFrame;
             var cube1material, cube1state, texture1, texture2, aspect, gridOffset, layerOffset;
+            var mouseObjects = []; // for intersections
+            var count = 0;
             maxFrame = 20; frameStep = 10;
             aspect = 2;
             gridOffset = 0.75;
@@ -64,7 +79,7 @@
                 renderer = new THREE.WebGLRenderer( { antialias: true } );
                 renderer.setPixelRatio( window.devicePixelRatio );
                 renderer.setSize( window.innerWidth / (3/2), window.innerHeight / ((3/2) * aspect) );
-                renderer.setClearColor(0x999999, 1); // bg
+                renderer.setClearColor(0xe0e0e0, 1); // bg
                 document.body.appendChild( renderer.domElement );
 
                 // https://threejs.org/docs/#api/cameras/PerspectiveCamera
@@ -79,12 +94,12 @@
                 controls.maxPolarAngle = Math.PI / 2;
                 //controls.enablePan = true;
 
-                scene.add( new THREE.AmbientLight( 0x222222 ) );
+                scene.add( new THREE.AmbientLight( 0x111111 ) );
 
                 // light
                 var light = new THREE.PointLight( 0xffffff, 1 );
                 camera.add( light );
-                scene.add( new THREE.AxisHelper( 20 ) );
+                //scene.add( new THREE.AxisHelper( 20 ) );
 
                 // textures
                 var loader = new THREE.TextureLoader();
@@ -97,7 +112,7 @@
                 //https://threejs.org/docs/#api/geometries/BoxGeometry
                 //var pointsGeometry = new THREE.DodecahedronGeometry( 10 );
                 //var cubeGeo = new THREE.BoxGeometry( 2*gridOffset,2*gridOffset,2*gridOffset);
-                var cubeGeo = new THREE.CylinderGeometry(2*gridOffset, 2*gridOffset, gridOffset, 32);
+                var cubeGeo = new THREE.CylinderGeometry(1*gridOffset, 1*gridOffset, 0.5*gridOffset, 64);
                 texture1 = loader.load('textures/sprites/logo_onap_4x.png')
                 texture2 = loader.load('textures/sprites/logo_onap_4xtint.png')
                 //var material = new THREE.PointsMaterial( { color: 0x0080ff, map: texture, size: 1, alphaTest: 0.5} );
@@ -120,8 +135,32 @@
                 var mesh = new THREE.Mesh( meshGeometry, meshMaterial);//.clone() );
                 mesh.material.side = THREE.FrontSide; // front faces
                 mesh.renderOrder = 1;
-                mesh.position.y = gridOffset;
+                mesh.position.y = (gridOffset / 4) + layerOffset;
                 group.add( mesh );
+                mouseObjects.push(mesh);
+                
+                
+                
+                
+                // VMs
+                var meshVM;
+                var vmGeo;
+                var meshMaterialVM;
+                var meshGeometryVM;
+                var vmSize = 1;
+                for(var vm=-1; vm<2;vm++){
+                    vmGeo = new THREE.BoxGeometry( 1*gridOffset,0.5*gridOffset,1*gridOffset);
+                    meshMaterialVM = new THREE.MeshLambertMaterial( { color: 0xdfdfff, opacity: 0.9, transparent: false} );
+                    meshGeometryVM = new THREE.ConvexBufferGeometry(vmGeo.vertices );
+                    meshVM = new THREE.Mesh( meshGeometryVM, meshMaterialVM);//.clone() );
+                    meshVM.material.side = THREE.FrontSide; // front faces
+                    meshVM.renderOrder = 1;
+                    meshVM.position.y = (gridOffset / 4) * vmSize;
+                    meshVM.position.x = gridOffset + ((vm * gridOffset) * 6) - gridOffset;
+                    group.add( meshVM );
+                    mouseObjects.push(meshVM);
+                }
+
                 
                 // layers
                 var oz = 10 * gridOffset;
@@ -298,11 +337,18 @@
             	if(cube1state < 1) {
             		   //cube1material.map = texture1;
             		   //cube1material.opacity = 1.0;
-            		   cube1material.color.set(0xff0000);
+            		   cube1material.color.set(0xff0060);
+                       document.getElementById('phases-t4').bgColor='#ff0050';
+                       document.getElementById('phases-t5').bgColor='#ff0050';
+            		   document.getElementById('phases-t6').bgColor='#ff0050';
             	   } else {
             		   //console.log("flash");
             		   //cube1material.opacity = 0.1;   
-                       cube1material.color.set(0xffff00);
+                       //cube1material.color.set(0xb0ff04);
+                       cube1material.color.set(0xc0ff40);
+                       document.getElementById('phases-t4').bgColor='#d0d0d0';
+                       document.getElementById('phases-t5').bgColor='#d0d0d0';
+                       document.getElementById('phases-t6').bgColor='#d0d0d0';
             	   } 
             	cube1state = 1 - cube1state;
             }
@@ -318,13 +364,35 @@
                 renderer.render( scene, camera );
             }
             
-           
+         // find intersections
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2();
+
+            // mouse listener
+            document.addEventListener( 'mousedown', function( event ) {    
+             var rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ( ( event.clientX - rect.left ) / ( rect.width - rect.left ) ) * 2 - 1;
+            mouse.y = - ( ( event.clientY - rect.top ) / ( rect.bottom - rect.top) ) * 2 + 1;
+                raycaster.setFromCamera( mouse, camera );
+                intersects = raycaster.intersectObjects( mouseObjects );
+                if ( intersects.length > 0 ) {         
+                    document.getElementById('center').innerHTML = 'INTERSECT Count: ' + ++count + intersects[0].point;
+                    //intersects[0].face.color.setRGB( 0.8 * Math.random() + 0.2, 0, 0 );
+                }
+            }, false );    
 
         </script>
         </div>
-        </td>
-        <td>two</td>
-        </tr></table>
-        <div id="south">south</div>
+
+        <div id="south">
+    <table id="phases">
+        <tr><td id="phases-t1" bgcolor="#ffff50">Initial Config</td>
+        <tr><td id="phases-t2" bgcolor="#20c0ff">Service Creation</td></tr>
+        <tr><td id="phases-t3" bgcolor="#c0ff30">VNF creation</td></tr>
+        <tr><td id="phases-t4" bgcolor="#ff0050">VF Module Preload</td></tr>
+        <tr><td id="phases-t5" bgcolor="#ff0050">VF Module Creation</td></tr>
+        <tr><td id="phases-t6" bgcolor="#c0ff30">Start Closed Loop</td></tr>
+    </table>        
+        </div>
 </body>
 </html>
