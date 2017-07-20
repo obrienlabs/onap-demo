@@ -17,8 +17,6 @@ public class Api {
     }
 
     public String getContent() {
-    	JAXRSClient client = new JAXRSClient();
-		content = client.run(false);
         return content;
     }
 

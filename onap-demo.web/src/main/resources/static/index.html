@@ -5,23 +5,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <style>
-            body {
-                font-family: Monospace;
-                background-color: #ddd;
-                margin: 0px;
-                overflow: hidden;
-            }
-            #info {
-                position: absolute;
-                color: #fff;
-                top: 0px;
-                width: 100%;
-                padding: 5px;
-                text-align:center;
-            }
-            a {
-                color: #fff;
-            }
+            body {font-family: Monospace; background-color: #ddd; margin: 0px; overflow: hidden;}
+            #info {position: absolute; color: #fff; top: 0px; width: 100%; padding: 5px; text-align:center;}
+            a {color: #fff;}
         </style>
         <!-- script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script-->
         <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
@@ -37,16 +23,15 @@
         // Main timing loop calls itself
         function timedCall(cell,speed,htmlDOMelementId) {
             // update all rest listeners
-            $.ajax({
-              url: "/api",
-              //data: {
-              //  code: f241brnekx
-              //},
-              success: function( result ) {
-                console.log("/api call: " + result);  
-                $( "#center" ).html( "<strong>" + result.content + "</strong>" );
-              }
-            });        	
+//            $.ajax({url: "/api",
+//              //data: {
+//              //  code: f241brnekx
+//              //},
+//              success: function( result ) {
+//                console.log("/api call: " + result);  
+//                $( "#center" ).html( "<strong>" + result.content + "</strong>" );
+//              }
+//            });        	
         	
         	if(timerFrame < 1) {
                  document.getElementById('phases-t1').bgColor='#d0d0d0';
@@ -57,12 +42,29 @@
         	 timers[cell] = setTimeout(function() { timedCall(cell,speed,htmlDOMelementId); }, speed); // no speed = max speed
         }
          
-        function load() {
-        	 doTimer(1, 2000, 2);
-        }
+        function load() { doTimer(1, 2000, 2);}
 
+        function runButton(source) {
+        	// change text temp
+        	$( "#config-customer-value" ).html( "<strong>Query pending...</strong>" );
+          $.ajax({url: "/api",
+        	  //dataType: 'application/json',
+            //data: {
+            //  code: f241brnekx
+            //},
+            success: function( data ) {
+            	   var returnedData = JSON.parse(data.content);
+        	   console.log(returnedData);
+                $( "#config-customer-value" ).html( "<strong>" + returnedData['global-customer-id'] + "</strong>" );
+                }});           
+        
+          if(timerFrame < 1) {
+        	  document.getElementById('phases-t1').bgColor='#d0d0d0';
+        	    } else {
+        	  document.getElementById('phases-t1').bgColor='#ffff40';
+           }      	
+        }
         </script>
-    
 </head>
 <body onload="javascript:load();">
     <div id="north">
@@ -71,7 +73,13 @@
         <td style="font-weight:bold; text-align: center">&nbsp;Dashboard</td>
         </tr></table>
     </div>
-    <div id="center">center</div>
+    <div id="center">
+        <table id="config">
+         <tr>
+            <td id="config-customer-key">Customer:</td>
+            <td id="config-customer-value">none</td>
+        </tr></table>        
+    </div>
     <div id="d2">d2</div>
     <div id="d3">
     <script src="https://fb.me/react-15.0.1.js"></script>
@@ -106,327 +114,297 @@
         init();
         animate();
             
-            function init() {
-                scene = new THREE.Scene();
-                renderer = new THREE.WebGLRenderer( { antialias: true } );
-                renderer.setPixelRatio( window.devicePixelRatio );
-                //renderer.setSize( window.innerWidth / (3/2), window.innerHeight / ((3/2) * aspect) );
-                renderer.setSize( window.innerWidth, window.innerHeight / aspect );
-                renderer.setClearColor(0xe0e0e0, 1); // bg
-                document.body.appendChild( renderer.domElement );
+        function init() {
+            scene = new THREE.Scene();
+            renderer = new THREE.WebGLRenderer( { antialias: true } );
+            renderer.setPixelRatio( window.devicePixelRatio );
+            //renderer.setSize( window.innerWidth / (3/2), window.innerHeight / ((3/2) * aspect) );
+            renderer.setSize( window.innerWidth, window.innerHeight / aspect );
+            renderer.setClearColor(0xe0e0e0, 1); // bg
+            document.body.appendChild( renderer.domElement );
 
-                // https://threejs.org/docs/#api/cameras/PerspectiveCamera
-                camera = new THREE.PerspectiveCamera( 20, window.innerWidth / window.innerHeight * aspect, 1, 2000 );
-                camera.position.set( 35, 30, 40 );
-                scene.add( camera );
+            // https://threejs.org/docs/#api/cameras/PerspectiveCamera
+            camera = new THREE.PerspectiveCamera( 20, window.innerWidth / window.innerHeight * aspect, 1, 2000 );
+            camera.position.set( 35, 30, 40 );
+            scene.add( camera );
 
-                // controls
-                var controls = new THREE.OrbitControls( camera, renderer.domElement );
-                controls.minDistance = 20;
-                controls.maxDistance = 50;
-                controls.maxPolarAngle = Math.PI / 2;
-                //controls.enablePan = true;
+            // controls
+            var controls = new THREE.OrbitControls( camera, renderer.domElement );
+            controls.minDistance = 20;
+            controls.maxDistance = 50;
+            controls.maxPolarAngle = Math.PI / 2;
+            //controls.enablePan = true;
 
-                scene.add( new THREE.AmbientLight( 0x111111 ) );
+            scene.add( new THREE.AmbientLight( 0x111111 ) );
 
-                // light
-                var light = new THREE.PointLight( 0xffffff, 1 );
-                camera.add( light );
-                //scene.add( new THREE.AxisHelper( 20 ) );
+            // light
+            var light = new THREE.PointLight( 0xffffff, 1 );
+            camera.add( light );
+            //scene.add( new THREE.AxisHelper( 20 ) );
 
-                // textures
-                var loader = new THREE.TextureLoader();
-                var texture = loader.load( 'textures/sprites/disc.png' );
+            // textures
+            var loader = new THREE.TextureLoader();
+            var texture = loader.load( 'textures/sprites/disc.png' );
 
-                group = new THREE.Group();
-                scene.add( group );
+            group = new THREE.Group();
+            scene.add( group );
 
-                // points
-                //https://threejs.org/docs/#api/geometries/BoxGeometry
-                //var pointsGeometry = new THREE.DodecahedronGeometry( 10 );
-                //var cubeGeo = new THREE.BoxGeometry( 2*gridOffset,2*gridOffset,2*gridOffset);
-                var cubeGeo = new THREE.CylinderGeometry(1*gridOffset, 1*gridOffset, 0.5*gridOffset, 64);
-                texture1 = loader.load('textures/sprites/logo_onap_4x.png')
-                texture2 = loader.load('textures/sprites/logo_onap_4xtint.png')
-                //var material = new THREE.PointsMaterial( { color: 0x0080ff, map: texture, size: 1, alphaTest: 0.5} );
-                //var material = new THREE.MeshBasicMaterial( {color: 0xffff00, map: texture} );
-                //cube1material = material;
-                //var points = new THREE.Points( pointsGeometry, material );
-                //group.add( points );
-
-                // convex hull
-                //var meshMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, opacity: 0.9, transparent: true} );
-                var meshMaterial = new THREE.MeshLambertMaterial( { color: 0xfffffff, opacity: 0.9, transparent: false} );
-                //var meshMaterial = material;
-                cube1material = meshMaterial;
-                var meshGeometry = new THREE.ConvexBufferGeometry(cubeGeo.vertices );
-                //var mesh = new THREE.Mesh( meshGeometry, meshMaterial );
-                //mesh.material.side = THREE.BackSide; // back faces
-                //mesh.renderOrder = 0;
-                //group.add( mesh );
-
-                var mesh = new THREE.Mesh( meshGeometry, meshMaterial);//.clone() );
-                mesh.material.side = THREE.FrontSide; // front faces
-                mesh.renderOrder = 1;
-                mesh.position.y = (gridOffset / 4) + layerOffset;
-                mesh.name = "service-firewall";
-                group.add( mesh );
-                mouseObjects.push(mesh);
+            // service
+            var cubeGeo = new THREE.CylinderGeometry(1*gridOffset, 1*gridOffset, 0.5*gridOffset, 64);
+            texture1 = loader.load('textures/sprites/logo_onap_4x.png')
+            texture2 = loader.load('textures/sprites/logo_onap_4xtint.png')
+            var meshMaterial = new THREE.MeshLambertMaterial( { color: 0xfffffff, opacity: 0.9, transparent: false} );
+            cube1material = meshMaterial;
+            var meshGeometry = new THREE.ConvexBufferGeometry(cubeGeo.vertices );
+            var mesh = new THREE.Mesh( meshGeometry, meshMaterial);//.clone() );
+            mesh.material.side = THREE.FrontSide; // front faces
+            mesh.renderOrder = 1;
+            mesh.position.y = (gridOffset / 4) + layerOffset;
+            mesh.name = "service-firewall";
+            group.add( mesh );
+            mouseObjects.push(mesh); 
                 
                 
+            // VMs
+            var meshVM;
+            var vmGeo;
+            var meshMaterialVM;
+            var meshGeometryVM;
+            var vmNames = ["generator", "firewall", "sink"];
+            var vmSize = 1;
+            for(var vm=0; vm<3; vm++){
+                vmGeo = new THREE.BoxGeometry( 1*gridOffset,0.5*gridOffset,1*gridOffset);
+                meshMaterialVM = new THREE.MeshLambertMaterial( { color: 0xdfdfff, opacity: 0.9, transparent: false} );
+                meshGeometryVM = new THREE.ConvexBufferGeometry(vmGeo.vertices );
+                meshVM = new THREE.Mesh( meshGeometryVM, meshMaterialVM);//.clone() );
+                meshVM.material.side = THREE.FrontSide; // front faces
+                meshVM.renderOrder = 1;
+                meshVM.position.y = (gridOffset / 4) * vmSize;
+                meshVM.position.x = gridOffset + (((vm - 1) * gridOffset) * 6) - gridOffset;
+                //meshVM.userData.id = "vm" + vm;
+                meshVM.name = vmNames[vm];
+                group.add( meshVM );
+                mouseObjects.push(meshVM);
+            }
                 
+            // edges
+            // https://stackoverflow.com/questions/18286837/how-to-chain-two-geometric-objects-using-three-js
+            var vmFromNames = ["generator", "firewall", "service-firewall"];
+            var vmToNames = ["firewall", "sink", "firewall"];
+            for(var vm=0; vm<vmFromNames.length; vm++) {
+                var startObject = scene.getObjectByName(vmFromNames[vm]);
+                var endObject = scene.getObjectByName(vmToNames[vm]);
+                var startPoint = new THREE.Vector3(startObject.position.x, startObject.position.y, startObject.position.z);
+                var endPoint   = new THREE.Vector3(endObject.position.x, endObject.position.y, endObject.position.z);
+                var direction = new THREE.Vector3().subVectors(endPoint, startPoint).normalize();
+                var arrow = new THREE.ArrowHelper(direction, startPoint, startPoint.distanceTo(endPoint), colorRed );
+                arrow.line.material.linewidth = 4; // no effect on windows
+                var vName = "edge-" + vmFromNames[vm] + "-" + vmToNames[vm];
+                console.log(vName);
+                arrow.name = vName;
+                group.add(arrow);
+            }
                 
-                // VMs
-                var meshVM;
-                var vmGeo;
-                var meshMaterialVM;
-                var meshGeometryVM;
-                var vmNames = ["generator", "firewall", "sink"];
-                var vmSize = 1;
-                for(var vm=0; vm<3; vm++){
-                    vmGeo = new THREE.BoxGeometry( 1*gridOffset,0.5*gridOffset,1*gridOffset);
-                    meshMaterialVM = new THREE.MeshLambertMaterial( { color: 0xdfdfff, opacity: 0.9, transparent: false} );
-                    meshGeometryVM = new THREE.ConvexBufferGeometry(vmGeo.vertices );
-                    meshVM = new THREE.Mesh( meshGeometryVM, meshMaterialVM);//.clone() );
-                    meshVM.material.side = THREE.FrontSide; // front faces
-                    meshVM.renderOrder = 1;
-                    meshVM.position.y = (gridOffset / 4) * vmSize;
-                    meshVM.position.x = gridOffset + (((vm - 1) * gridOffset) * 6) - gridOffset;
-                    //meshVM.userData.id = "vm" + vm;
-                    meshVM.name = vmNames[vm];
-                    group.add( meshVM );
-                    mouseObjects.push(meshVM);
-                }
+            // layers
+            var oz = 15 * gridOffset;
+            var oy = 0.1;
+            var ox = 30 * gridOffset;
+            var layerColor = 0xccccff;
+            createLayer(ox, oy, oz, group, layerOffset, 0xffccff);
+            createLayer(ox, oy, oz, group, 0, layerColor);
+            createLayer(ox, oy, oz, group, -layerOffset, layerColor);
+             
                 
-                // edges
-                // https://stackoverflow.com/questions/18286837/how-to-chain-two-geometric-objects-using-three-js
-                var vmFromNames = ["generator", "firewall", "service-firewall"];
-                var vmToNames = ["firewall", "sink", "firewall"];
-                for(var vm=0; vm<vmFromNames.length; vm++) {
-                    var startObject = scene.getObjectByName(vmFromNames[vm]);
-                    var endObject = scene.getObjectByName(vmToNames[vm]);
-                    var startPoint = new THREE.Vector3(startObject.position.x, startObject.position.y, startObject.position.z);
-                    var endPoint   = new THREE.Vector3(endObject.position.x, endObject.position.y, endObject.position.z);
-                    var direction = new THREE.Vector3().subVectors(endPoint, startPoint).normalize();
-                    var arrow = new THREE.ArrowHelper(direction, startPoint, startPoint.distanceTo(endPoint), colorRed );
-                    arrow.line.material.linewidth = 4; // no effect on windows
-                    var vName = "edge-" + vmFromNames[vm] + "-" + vmToNames[vm];
-                    console.log(vName);
-                    arrow.name = vName;
-                    group.add(arrow);
-                }
-                
-                // layers
-                var oz = 15 * gridOffset;
-                var oy = 0.1;
-                var ox = 30 * gridOffset;
-                var layerColor = 0xccccff;
-                var layer0Geo = new THREE.BoxGeometry( ox,oy,oz );
-                var layer0Material = new THREE.MeshLambertMaterial( { color: 0xffccff, opacity: 0.2, transparent: true} );
-                var layer0Mesh = new THREE.Mesh( layer0Geo, layer0Material);
-                layer0Mesh.position.y = layerOffset;
-                group.add(layer0Mesh);
-
-                var layer1Geo = new THREE.BoxGeometry( ox,oy,oz );
-                var layer1Material = new THREE.MeshLambertMaterial( { color: layerColor, opacity: 0.2, transparent: true} );
-                var layer1Mesh = new THREE.Mesh( layer1Geo, layer1Material);
-                layer1Mesh.position.y = 0;                
-                group.add(layer1Mesh);
-                
-                var layer2Geo = new THREE.BoxGeometry( ox,oy,oz );
-                var layer2Material = new THREE.MeshLambertMaterial( { color: layerColor, opacity: 0.2, transparent: true} );
-                var layer2Mesh = new THREE.Mesh( layer2Geo, layer2Material);
-                layer2Mesh.position.y = -layerOffset;                
-                group.add(layer2Mesh);
-                
-                
-                var textOffsetY = -2 * gridOffset;
-                var color = 0x10508f;      
-                // add text
-                // from https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_text_shapes.html
-                var floader = new THREE.FontLoader();
-                //floader.load( 'fonts/helvetiker_regular.typeface.json', fontFunction('fonts/helvetiker_regular.typeface.json', "test", layerOffset));
-                // need to consolidate!
-                floader.load( 'fonts/helvetiker_regular.typeface.json', function(font) {
-                    var xMid, text;
-                    var textShape = new THREE.BufferGeometry();
-                    
-                    var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
-                    var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
-                    var message = "Services";
-                    var shapes = font.generateShapes( message, 0.5, 0.1 );
-                    var geometry = new THREE.ShapeGeometry( shapes );
-                    geometry.computeBoundingBox();
-                    xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
-                    geometry.translate( xMid, 5 * gridOffset, textOffsetY);
-                    // make shape ( N.B. edge view not visible )
-                    textShape.fromGeometry( geometry );
-                    text = new THREE.Mesh( textShape, matLite );
-                    text.position.z = - layerOffset;//150;
-                    scene.add( text );
-                    // make line shape ( N.B. edge view remains visible )
-                    var holeShapes = [];
-                    for ( var i = 0; i < shapes.length; i ++ ) {
-                        var shape = shapes[ i ];
-                        if ( shape.holes && shape.holes.length > 0 ) {
-                            for ( var j = 0; j < shape.holes.length; j ++ ) {
-                                var hole = shape.holes[ j ];
-                                holeShapes.push( hole );
-                            }
+            var textOffsetY = -2 * gridOffset;
+            var color = 0x10508f;      
+            // add text
+            // from https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_text_shapes.html
+            var floader = new THREE.FontLoader();
+            //floader.load( 'fonts/helvetiker_regular.typeface.json', fontFunction('fonts/helvetiker_regular.typeface.json', "test", layerOffset));
+            // need to consolidate!
+            floader.load( 'fonts/helvetiker_regular.typeface.json', function(font) {
+                var xMid, text;
+                var textShape = new THREE.BufferGeometry();   
+                var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
+                var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
+                var message = "Services";
+                var shapes = font.generateShapes( message, 0.5, 0.1 );
+                var geometry = new THREE.ShapeGeometry( shapes );
+                geometry.computeBoundingBox();
+                xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
+                geometry.translate( xMid, 5 * gridOffset, textOffsetY);
+                // make shape ( N.B. edge view not visible )
+                textShape.fromGeometry( geometry );
+                text = new THREE.Mesh( textShape, matLite );
+                text.position.z = - layerOffset;//150;
+                scene.add( text );
+                // make line shape ( N.B. edge view remains visible )
+                var holeShapes = [];
+                for (var i = 0; i < shapes.length; i ++ ) {
+                    var shape = shapes[ i ];
+                    if (shape.holes && shape.holes.length > 0 ) {
+                        for (var j = 0; j < shape.holes.length; j ++ ) {
+                            var hole = shape.holes[ j ];
+                            holeShapes.push( hole );
                         }
                     }
-                    shapes.push.apply( shapes, holeShapes );
-                    var lineText = new THREE.Object3D();
-                    for ( var i = 0; i < shapes.length; i ++ ) {
-                        var shape = shapes[ i ];
-                        var lineGeometry = shape.createPointsGeometry();
-                        lineGeometry.translate( xMid, 0, 0 );
-                        //var lineMesh = new THREE.Line( lineGeometry, matDark );
-                        //lineText.add( lineMesh );
-                    }
-                    scene.add( lineText );
-                } ); 
+                }
+                shapes.push.apply( shapes, holeShapes );
+                var lineText = new THREE.Object3D();
+                for ( var i = 0; i < shapes.length; i ++ ) {
+                    var shape = shapes[ i ];
+                    var lineGeometry = shape.createPointsGeometry();
+                     lineGeometry.translate( xMid, 0, 0 );
+                     //var lineMesh = new THREE.Line( lineGeometry, matDark );
+                    //lineText.add( lineMesh );
+                }
+                scene.add( lineText );
+            }); 
         
-                floader.load( 'fonts/helvetiker_regular.typeface.json', function(font) {
-                    var xMid, text;
-                    var textShape = new THREE.BufferGeometry();
-                    var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
-                    var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
-                    var message = "Virtual Machines";
-                    var shapes = font.generateShapes( message, 0.5, 0.1 );
-                    var geometry = new THREE.ShapeGeometry( shapes );
-                    geometry.computeBoundingBox();
-                    xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
-                    geometry.translate( xMid, 0 * gridOffset, textOffsetY );
-                    // make shape ( N.B. edge view not visible )
-                    textShape.fromGeometry( geometry );
-                    text = new THREE.Mesh( textShape, matLite );
-                    text.position.z = - layerOffset;//150;
-                    scene.add( text );
-                    // make line shape ( N.B. edge view remains visible )
-                    var holeShapes = [];
-                    for ( var i = 0; i < shapes.length; i ++ ) {
-                        var shape = shapes[ i ];
-                        if ( shape.holes && shape.holes.length > 0 ) {
-                            for ( var j = 0; j < shape.holes.length; j ++ ) {
-                                var hole = shape.holes[ j ];
-                                holeShapes.push( hole );
-                            }
+            floader.load( 'fonts/helvetiker_regular.typeface.json', function(font) {
+                var xMid, text;
+                var textShape = new THREE.BufferGeometry();
+                var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
+                var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
+                var message = "Virtual Machines";
+                var shapes = font.generateShapes( message, 0.5, 0.1 );
+                var geometry = new THREE.ShapeGeometry( shapes );
+                geometry.computeBoundingBox();
+                xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
+                geometry.translate( xMid, 0 * gridOffset, textOffsetY );
+                // make shape ( N.B. edge view not visible )
+                textShape.fromGeometry( geometry );
+                text = new THREE.Mesh( textShape, matLite );
+                text.position.z = - layerOffset;//150;
+                scene.add( text );
+                // make line shape ( N.B. edge view remains visible )
+                var holeShapes = [];
+                for ( var i = 0; i < shapes.length; i ++ ) {
+                    var shape = shapes[ i ];
+                    if ( shape.holes && shape.holes.length > 0 ) {
+                        for ( var j = 0; j < shape.holes.length; j ++ ) {
+                            var hole = shape.holes[ j ];
+                            holeShapes.push( hole );
                         }
                     }
-                    shapes.push.apply( shapes, holeShapes );
-                    var lineText = new THREE.Object3D();
-                    for ( var i = 0; i < shapes.length; i ++ ) {
-                        var shape = shapes[ i ];
-                        var lineGeometry = shape.createPointsGeometry();
-                        lineGeometry.translate( xMid, 0, 0 );
-                        //var lineMesh = new THREE.Line( lineGeometry, matDark );
-                        //lineText.add( lineMesh );
-                    }
-                    scene.add( lineText );
-                } ); //end load function
+                }
+                shapes.push.apply( shapes, holeShapes );
+                var lineText = new THREE.Object3D();
+                for ( var i = 0; i < shapes.length; i ++ ) {
+                    var shape = shapes[ i ];
+                    var lineGeometry = shape.createPointsGeometry();
+                    lineGeometry.translate( xMid, 0, 0 );
+                    //var lineMesh = new THREE.Line( lineGeometry, matDark );
+                    //lineText.add( lineMesh );
+                }
+               scene.add( lineText );
+            } ); //end load function
 
                 
-                floader.load( 'fonts/helvetiker_regular.typeface.json', function(font) {
-                    var xMid, text;
-                    var textShape = new THREE.BufferGeometry();
-                    var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
-                    var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
-                    var message = "Networks";
-                    var shapes = font.generateShapes( message, 0.5, 0.1 );
-                    var geometry = new THREE.ShapeGeometry( shapes );
-                    geometry.computeBoundingBox();
-                    xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
-                    geometry.translate( xMid, -5 * gridOffset, textOffsetY);
-                    // make shape ( N.B. edge view not visible )
-                    textShape.fromGeometry( geometry );
-                    text = new THREE.Mesh( textShape, matLite );
-                    text.position.z = -layerOffset;//150;
-                    scene.add( text );
-                    // make line shape ( N.B. edge view remains visible )
-                    var holeShapes = [];
-                    for ( var i = 0; i < shapes.length; i ++ ) {
-                        var shape = shapes[ i ];
-                        if ( shape.holes && shape.holes.length > 0 ) {
-                            for ( var j = 0; j < shape.holes.length; j ++ ) {
-                                var hole = shape.holes[ j ];
-                                holeShapes.push( hole );
-                            }
+            floader.load( 'fonts/helvetiker_regular.typeface.json', function(font) {
+                var xMid, text;
+                var textShape = new THREE.BufferGeometry();
+                var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
+                var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
+                var message = "Networks";
+                var shapes = font.generateShapes( message, 0.5, 0.1 );
+                var geometry = new THREE.ShapeGeometry( shapes );
+                geometry.computeBoundingBox();
+                xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
+                geometry.translate( xMid, -5 * gridOffset, textOffsetY);
+                // make shape ( N.B. edge view not visible )
+                textShape.fromGeometry( geometry );
+                text = new THREE.Mesh( textShape, matLite );
+                text.position.z = -layerOffset;//150;
+                scene.add( text );
+                // make line shape ( N.B. edge view remains visible )
+                var holeShapes = [];
+                for ( var i = 0; i < shapes.length; i ++ ) {
+                    var shape = shapes[ i ];
+                    if ( shape.holes && shape.holes.length > 0 ) {
+                        for ( var j = 0; j < shape.holes.length; j ++ ) {
+                            var hole = shape.holes[ j ];
+                            holeShapes.push( hole );
                         }
                     }
-                    shapes.push.apply( shapes, holeShapes );
-                    var lineText = new THREE.Object3D();
-                    for ( var i = 0; i < shapes.length; i ++ ) {
-                        var shape = shapes[ i ];
-                        var lineGeometry = shape.createPointsGeometry();
-                        lineGeometry.translate( xMid, 0, 0 );
-                        //var lineMesh = new THREE.Line( lineGeometry, matDark );
-                        //lineText.add( lineMesh );
-                    }
-                    scene.add( lineText );
-                } ); //end load function
-                window.addEventListener( 'resize', onWindowResize, false );
-            }
+                }
+                shapes.push.apply( shapes, holeShapes );
+                var lineText = new THREE.Object3D();
+                for ( var i = 0; i < shapes.length; i ++ ) {
+                    var shape = shapes[ i ];
+                    var lineGeometry = shape.createPointsGeometry();
+                    lineGeometry.translate( xMid, 0, 0 );
+                    //var lineMesh = new THREE.Line( lineGeometry, matDark );
+                    //lineText.add( lineMesh );
+                }
+                scene.add( lineText );
+            } ); //end load function
+            window.addEventListener( 'resize', onWindowResize, false );
+        }
 
-            function randomPoint() {
-                return new THREE.Vector3( THREE.Math.randFloat( - 1, 1 ), THREE.Math.randFloat( - 1, 1 ), THREE.Math.randFloat( - 1, 1 ) );
-            }
+        function createLayer(_ox, _oy, _oz, group, offset, layerColor) {
+            var layer2Geo = new THREE.BoxGeometry(_ox,_oy,_oz );
+            var layer2Material = new THREE.MeshLambertMaterial( { color: layerColor, opacity: 0.2, transparent: true} );
+            var layer2Mesh = new THREE.Mesh( layer2Geo, layer2Material);
+            layer2Mesh.position.y = offset;                
+            group.add(layer2Mesh);
+        }
 
-            function onWindowResize() {
-                camera.aspect = window.innerWidth / window.innerHeight * aspect;
-                camera.updateProjectionMatrix();
-                renderer.setSize( window.innerWidth / 2, window.innerHeight / (2 * aspect));
-            }
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight * aspect;
+            camera.updateProjectionMatrix();
+            renderer.setSize( window.innerWidth / 2, window.innerHeight / (2 * aspect));
+        }
 
-            function animate() {
-                requestAnimationFrame( animate );
-                //group.rotation.y += 0.015;
-                frameStep -= 1;
-                render();
-            }
+        function animate() {
+            requestAnimationFrame( animate );
+            //group.rotation.y += 0.015;
+            frameStep -= 1;
+            render();
+        }
 
-            function flashState() {
-            	if(cube1state < 1) {
-            		   //cube1material.map = texture1;
-            		   //cube1material.opacity = 1.0;
-            		   cube1material.color.set(0xff0060);
-                       document.getElementById('phases-t4').bgColor='#ff0050';
-                       document.getElementById('phases-t5').bgColor='#ff0050';
-            		   document.getElementById('phases-t6').bgColor='#ff0050';
-            		   scene.getObjectByName("edge-firewall-sink").line.material.color.set(0xff0060);
-            		   scene.getObjectByName("edge-firewall-sink").cone.material.color.set(0xff0060);
-            	   } else {
-            		   //console.log("flash");
-            		   //cube1material.opacity = 0.1;   
-                       //cube1material.color.set(0xb0ff04);
-                       cube1material.color.set(0xc0ff40);
-                       document.getElementById('phases-t4').bgColor='#d0d0d0';
-                       document.getElementById('phases-t5').bgColor='#d0d0d0';
-                       document.getElementById('phases-t6').bgColor='#d0d0d0';
-                       scene.getObjectByName("edge-firewall-sink").line.material.color.set(0xc0ff40);
-                       scene.getObjectByName("edge-firewall-sink").cone.material.color.set(0xc0ff40);
-            	   } 
-            	cube1state = 1 - cube1state;
-            }
+        function flashState() {
+         	if(cube1state < 1) {
+           		   //cube1material.map = texture1;
+           		   //cube1material.opacity = 1.0;
+            	   cube1material.color.set(0xff0060);
+                   document.getElementById('phases-t4').bgColor='#ff0050';
+                   document.getElementById('phases-t5').bgColor='#ff0050';
+            	   document.getElementById('phases-t6').bgColor='#ff0050';
+            	   scene.getObjectByName("edge-firewall-sink").line.material.color.set(0xff0060);
+           		   scene.getObjectByName("edge-firewall-sink").cone.material.color.set(0xff0060);
+           	   } else {
+           		   //console.log("flash");
+           		   //cube1material.opacity = 0.1;   
+                   //cube1material.color.set(0xb0ff04);
+                   cube1material.color.set(0xc0ff40);
+                   document.getElementById('phases-t4').bgColor='#d0d0d0';
+                   document.getElementById('phases-t5').bgColor='#d0d0d0';
+                   document.getElementById('phases-t6').bgColor='#d0d0d0';
+                   scene.getObjectByName("edge-firewall-sink").line.material.color.set(0xc0ff40);
+                   scene.getObjectByName("edge-firewall-sink").cone.material.color.set(0xc0ff40);
+                } 
+                cube1state = 1 - cube1state;
+        }
             
-            function render() {
-            	if(frameStep < 1) {
-            		//console.log("test " + frameStep);
-            		frameStep = maxFrame;
-            		flashState();
-            	} else {
-            		//console.log("frame: " + frameStep);
-            	}
-                renderer.render( scene, camera );
+        function render() {
+           	if(frameStep < 1) {
+            	//console.log("test " + frameStep);
+            	frameStep = maxFrame;
+            	flashState();
+            } else {
+            	//console.log("frame: " + frameStep);
             }
+            renderer.render( scene, camera );
+        }
             
-         // find intersections
-            var raycaster = new THREE.Raycaster();
-            var mouse = new THREE.Vector2();
+        // find intersections
+        var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
 
-            // mouse listener
-            document.addEventListener( 'mousedown', function( event ) {    
-             var rect = renderer.domElement.getBoundingClientRect();
+        // mouse listener
+        document.addEventListener( 'mousedown', function( event ) {    
+            var rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ( ( event.clientX - rect.left ) / ( rect.width - rect.left ) ) * 2 - 1;
             mouse.y = - ( ( event.clientY - rect.top ) / ( rect.bottom - rect.top) ) * 2 + 1;
                 raycaster.setFromCamera( mouse, camera );
@@ -439,17 +417,28 @@
 
         </script>
         </div>
-
         <div id="south">
     <table id="phases">
-        <tr><td id="phases-t0" style="font-weight:bold; text-align: center">Demo Phase:</td>
-        <tr><td id="phases-t1" bgcolor="#ffff50">Initial Config</td>
-        <tr><td id="phases-t2" bgcolor="#20c0ff">Service Creation</td></tr>
-        <tr><td id="phases-t3" bgcolor="#c0ff30">VNF creation</td></tr>
-        <tr><td id="phases-t4" bgcolor="#ff0050">VF Module Preload</td></tr>
-        <tr><td id="phases-t5" bgcolor="#ff0050">VF Module Creation</td></tr>
-        <tr><td id="phases-t6" bgcolor="#c0ff30">Start Closed Loop</td></tr>
-    </table>        
+        <tr><td id="phases-t0" style="font-weight:bold; text-align: center">Demo Phase:</td><tr>
+            <td id="phases-t1" bgcolor="#ffff50">Initial Config</td>
+            <td><form action="javascript:runButton('config');" method="get"><input type="submit" value="Run">Launch</input></form></td>
+            <td>logs</td>
+        </tr><tr>
+            <td id="phases-t2" bgcolor="#20c0ff">Service Creation</td>
+            <td>logs</td>
+        </tr><tr>
+            <td id="phases-t3" bgcolor="#c0ff30">VNF creation</td>
+            <td>logs</td>
+        </tr><tr>
+            <td id="phases-t4" bgcolor="#ff0050">VF Module Preload</td>
+            <td>logs</td>
+        </tr><tr>
+            <td id="phases-t5" bgcolor="#ff0050">VF Module Creation</td>
+            <td>logs</td>
+        </tr><tr>
+            <td id="phases-t6" bgcolor="#c0ff30">Start Closed Loop</td>
+            <td>logs</td>
+        </tr></table>        
         </div>
 </body>
 </html>
