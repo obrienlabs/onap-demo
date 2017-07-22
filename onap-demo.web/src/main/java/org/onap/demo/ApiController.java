@@ -30,8 +30,9 @@ public class ApiController {
     	JAXRSClient client = new JAXRSClient();
     	//String content = client.run(false,"http://67.192.246.187:8080/asdc/properties/encrypt/ecomp-dev/", "", "aa3871669d893c7fb8abbcda31b88b4f");
     	String sec = client.run(false, "http://" + Configuration.get("coll-ip") + ":3904/events/unauthenticated.SEC_MEASUREMENT_OUTPUT/group3/sub1?timeout=9000","","");
+    	String content = client.run(true, "https://" + Configuration.get("aai-ip") + ":8443/aai/v8/business/customers/customer","","");
     	// https://{{aai_ip}}:8443/aai/v8/service-design-and-creation/services
-    	String content = client.aaiCustomer();//.run(true, "172.99.115.238", "8443", "aai/v8/business/customers");
+    	//String content = client.aaiCustomer();//.run(true, "172.99.115.238", "8443", "aai/v8/business/customers");
     	return content;
     }
 
