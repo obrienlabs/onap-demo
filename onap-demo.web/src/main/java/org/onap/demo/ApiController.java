@@ -16,23 +16,32 @@ public class ApiController {
     private final AtomicLong counter = new AtomicLong();
 
     @RequestMapping(method=RequestMethod.GET)
-    public @ResponseBody Api sayHello(@RequestParam(value="name", required=false, defaultValue="undefined") String name) {
+    public @ResponseBody Api sayHello(@RequestParam(value="name", required=true, defaultValue="undefined") String name) {
     	String message = null;
     	// external call
-    	message = getState("sdc");
+    	message = getState(name);
     	Api api = new Api(
     			counter.incrementAndGet(), //String.format(template, name));
     			message);
     	return api;
-    }
+    } 
     
     private String getState(String id) {
+    	String content = null;
     	JAXRSClient client = new JAXRSClient();
-    	//String content = client.run(false,"http://67.192.246.187:8080/asdc/properties/encrypt/ecomp-dev/", "", "aa3871669d893c7fb8abbcda31b88b4f");
-    	String sec = client.run(false, "http://" + Configuration.get("coll-ip") + ":3904/events/unauthenticated.SEC_MEASUREMENT_OUTPUT/group3/sub1?timeout=9000","","");
-    	String content = client.run(true, "https://" + Configuration.get("aai-ip") + ":8443/aai/v8/business/customers/customer","","");
-    	// https://{{aai_ip}}:8443/aai/v8/service-design-and-creation/services
-    	//String content = client.aaiCustomer();//.run(true, "172.99.115.238", "8443", "aai/v8/business/customers");
+    	//String sec = client.run(false, "http://" + Configuration.get("coll-ip") + ":3904/events/unauthenticated.SEC_MEASUREMENT_OUTPUT/group3/sub1?timeout=9000","","");
+    	
+    	
+    	switch(id) {
+    	case "sec_mo":
+    		content = client.run(false, Configuration.get("iad", "coll-ip"), "3904", "events/unauthenticated.SEC_MEASUREMENT_OUTPUT/group3/sub1?timeout=9000", null, null, null);
+    	   break;
+    	case "customer":
+    		// will get a 4000 on customers/customer but not customers at demo init state
+    		content = client.run(true, Configuration.get("iad", "aai-ip"), "8443", "aai/v8/business/customers/customer", "AAI", "AAI", "AAI");
+    		break;
+    	}
+    	
     	return content;
     }
 

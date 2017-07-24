@@ -32,37 +32,65 @@
 //                $( "#center" ).html( "<strong>" + result.content + "</strong>" );
 //              }
 //            });        	
-        	
+        	if(cell == 1) {
         	if(timerFrame < 1) {
                  document.getElementById('phases-t1').bgColor='#d0d0d0';
              } else {
                  document.getElementById('phases-t1').bgColor='#ffff40';
              }
              timerFrame = 1 - timerFrame;
+             } else {
+            	 runCollector();
+             }
         	 timers[cell] = setTimeout(function() { timedCall(cell,speed,htmlDOMelementId); }, speed); // no speed = max speed
         }
          
-        function load() { doTimer(1, 2000, 2);}
+        function load() { 
+        	doTimer(1, 2000, 2); // flashing
+        	doTimer(2, 5000, 2); // sec
+        	}
 
-        function runButton(source) {
-        	// change text temp
-        	$( "#config-customer-value" ).html( "<strong>Query pending...</strong>" );
-          $.ajax({url: "/api",
-        	  //dataType: 'application/json',
-            //data: {
-            //  code: f241brnekx
-            //},
+        function runCollector() {
+            // change text temp
+            $( "#config-customer-value" ).html( "<strong>Query pending ...</strong>" );
+            $.ajax({url: "/api",
+              //dataType: 'application/json',
+            data: {
+              name: 'sec_mo'
+            },
             success: function( data ) {
-            	   var returnedData = JSON.parse(data.content);
+               var returnedData = JSON.parse(data.content);
+               //console.log(returnedData);
+               for(var i in returnedData) {
+                    var rec = JSON.parse(returnedData[i]);
+                    console.log(rec.event);   
+            	   $( "#phase-logs" ).append("<br/>eventId: " + rec.event.commonEventHeader.eventId//":{\"measurementsForVfScalingFields\":{\"measurementInterval\":10,\"measurementsForVfScalingVersion\":1.1,\"vNicUsageArray\":[{\"multicastPacketsIn\":0,\"bytesIn\":14500,\"unicastPacketsIn\":0,\"multicastPacketsOut\":0,\"broadcastPacketsOut\":0,\"packetsOut\":0,\"bytesOut\":0,\"broadcastPacketsIn\":0,\"packetsIn\":500,\"unicastPacketsOut\":0,\"vNicIdentifier\":\"eth1\"}]},\"commonEventHeader\":{\"reportingEntityName\":\"demofwl01fwl\",\"startEpochMicrosec\":1500656259410865,\"lastEpochMicrosec\":1500656269410865,\"eventId\":\"24170\"
+            			   
+            			   );
+               }
+                }}); 
+        }
+        
+        function runButton(source) {
+        	//runCollector(source);
+        	// change text temp
+        	$( "#config-customer-value" ).html( "<strong>Query pending ...</strong>" );
+            $.ajax({url: "/api",
+        	  //dataType: 'application/json',
+            data: {
+              name: 'customer'
+            },
+            success: function( data ) {
+               var returnedData = JSON.parse(data.content);
         	   console.log(returnedData);
-                $( "#config-customer-value" ).html( "<strong>" + returnedData['global-customer-id'] + "</strong>" );
+               $( "#config-customer-value" ).html( "<strong>" + returnedData['global-customer-id'] + "</strong>" );
                 }});           
         
           if(timerFrame < 1) {
         	  document.getElementById('phases-t1').bgColor='#d0d0d0';
-        	    } else {
+          } else {
         	  document.getElementById('phases-t1').bgColor='#ffff40';
-           }      	
+          }      	
         }
         </script>
 </head>
@@ -418,10 +446,12 @@
         </script>
         </div>
         <div id="south">
+        <table id="log_phases">
+            <tr><td>
     <table id="phases">
         <tr><td id="phases-t0" style="font-weight:bold; text-align: center">Demo Phase:</td><tr>
             <td id="phases-t1" bgcolor="#ffff50">Initial Config</td>
-            <td><form action="javascript:runButton('config');" method="get"><input type="submit" value="Run">Launch</input></form></td>
+            <td><form action="javascript:runButton('config');" method="get"><input type="submit" value="Run"></input></form></td>
             <td>logs</td>
         </tr><tr>
             <td id="phases-t2" bgcolor="#20c0ff">Service Creation</td>
@@ -438,7 +468,11 @@
         </tr><tr>
             <td id="phases-t6" bgcolor="#c0ff30">Start Closed Loop</td>
             <td>logs</td>
-        </tr></table>        
+        </tr></table>
+        </td>
+        <td id="phase-logs" bgcolor="#cfcf50">
+        logs
+        </td></tr></table>        
         </div>
 </body>
 </html>
