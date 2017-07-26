@@ -8,16 +8,25 @@
             body {font-family: Monospace; background-color: #ddd; margin: 0px; overflow: hidden;}
             #info {position: absolute; color: #fff; top: 0px; width: 100%; padding: 5px; text-align:center;}
             a {color: #fff;}
+            #info {position: absolute; top: 10px; width: 100%; text-align: center; z-index: 100;display:block;}
         </style>
+         
         <!-- script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script-->
         <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+        <!-- websocket -->
+    <!-- script src="/webjars/jquery/jquery.min.js"></script-->
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
         <script>
+        // for three js global access
+        var sceneExt;
         
         // Timer variables
         var timers = new Array();
         var timerStateArray = new Array();
         var timerFrame = 1;
         timerStateArray[1] = 0;
+        var closedLoopCounter = 0;
         
         function doTimer(cell,speed,htmlDOMelementId) { timedCall(cell,speed,htmlDOMelementId); }
         // Main timing loop calls itself
@@ -47,12 +56,14 @@
          
         function load() { 
         	doTimer(1, 2000, 2); // flashing
-        	doTimer(2, 5000, 2); // sec
+        	doTimer(2, 10000, 2); // sec
         	}
 
         function runCollector() {
+            var arrowToFlash = "edge-firewall-dmaap";
+        
             // change text temp
-            $( "#config-customer-value" ).html( "<strong>Query pending ...</strong>" );
+            //$( "#config-customer-value" ).html( "<strong>Running Collector ...</strong>" );
             $.ajax({url: "/api",
               //dataType: 'application/json',
             data: {
@@ -64,17 +75,33 @@
                for(var i in returnedData) {
                     var rec = JSON.parse(returnedData[i]);
                     console.log(rec.event);   
-            	   $( "#phase-logs" ).append("<br/>eventId: " + rec.event.commonEventHeader.eventId//":{\"measurementsForVfScalingFields\":{\"measurementInterval\":10,\"measurementsForVfScalingVersion\":1.1,\"vNicUsageArray\":[{\"multicastPacketsIn\":0,\"bytesIn\":14500,\"unicastPacketsIn\":0,\"multicastPacketsOut\":0,\"broadcastPacketsOut\":0,\"packetsOut\":0,\"bytesOut\":0,\"broadcastPacketsIn\":0,\"packetsIn\":500,\"unicastPacketsOut\":0,\"vNicIdentifier\":\"eth1\"}]},\"commonEventHeader\":{\"reportingEntityName\":\"demofwl01fwl\",\"startEpochMicrosec\":1500656259410865,\"lastEpochMicrosec\":1500656269410865,\"eventId\":\"24170\"
-            			   
-            			   );
+            	   $( "#closed-loop-logs-cell" ).append(rec.event.commonEventHeader.eventId + ","//":{\"measurementsForVfScalingFields\":{\"measurementInterval\":10,\"measurementsForVfScalingVersion\":1.1,\"vNicUsageArray\":[{\"multicastPacketsIn\":0,\"bytesIn\":14500,\"unicastPacketsIn\":0,\"multicastPacketsOut\":0,\"broadcastPacketsOut\":0,\"packetsOut\":0,\"bytesOut\":0,\"broadcastPacketsIn\":0,\"packetsIn\":500,\"unicastPacketsOut\":0,\"vNicIdentifier\":\"eth1\"}]},\"commonEventHeader\":{\"reportingEntityName\":\"demofwl01fwl\",\"startEpochMicrosec\":1500656259410865,\"lastEpochMicrosec\":1500656269410865,\"eventId\":\"24170\"
+            	    );
+            	   $( "#closed-loop-logs" ).html(rec.event.commonEventHeader.eventId);//":{\"measurementsForVfScalingFields\":{\"measurementInterval\":10,\"measurementsForVfScalingVersion\":1.1,\"vNicUsageArray\":[{\"multicastPacketsIn\":0,\"bytesIn\":14500,\"unicastPacketsIn\":0,\"multicastPacketsOut\":0,\"broadcastPacketsOut\":0,\"packetsOut\":0,\"bytesOut\":0,\"broadcastPacketsIn\":0,\"packetsIn\":500,\"unicastPacketsOut\":0,\"vNicIdentifier\":\"eth1\"}]},\"commonEventHeader\":{\"reportingEntityName\":\"demofwl01fwl\",\"startEpochMicrosec\":1500656259410865,\"lastEpochMicrosec\":1500656269410865,\"eventId\":\"24170\"
+                           
+            	   if(closedLoopCounter < 1) {
+            		   document.getElementById('phases-t6').bgColor='#ff0050';
+                       sceneExt.getObjectByName(arrowToFlash).line.material.color.set(0xff0060);
+                       sceneExt.getObjectByName(arrowToFlash).cone.material.color.set(0xff0060);
+            		   closedLoopCounter = 1;
+            	   } else {
+            		   document.getElementById('phases-t6').bgColor='#d0d0d0';
+                       sceneExt.getObjectByName(arrowToFlash).line.material.color.set(0xc0ff40);
+                       sceneExt.getObjectByName(arrowToFlash).cone.material.color.set(0xc0ff40);  
+            	   }
+            	   closedLoopCounter = 1 - closedLoopCounter;
                }
                 }}); 
         }
-        
+            
         function runButton(source) {
+            //switch(source) {
+            //case "initial-config":
+            
         	//runCollector(source);
+        	//connect();
         	// change text temp
-        	$( "#config-customer-value" ).html( "<strong>Query pending ...</strong>" );
+        	/*$( "#config-customer-value" ).html( "<strong>Query pending ...</strong>" );
             $.ajax({url: "/api",
         	  //dataType: 'application/json',
             data: {
@@ -86,21 +113,126 @@
                $( "#config-customer-value" ).html( "<strong>" + returnedData['global-customer-id'] + "</strong>" );
                 }});           
         
-          if(timerFrame < 1) {
+            if(timerFrame < 1) {
         	  document.getElementById('phases-t1').bgColor='#d0d0d0';
-          } else {
+              //flashState();
+        	  } else {
         	  document.getElementById('phases-t1').bgColor='#ffff40';
-          }      	
+              //flashState();
+        	  }     */
+            //break;
+            //case "vfm-preload": 
+                $( "#vfm-preload-logs" ).html( "<strong>VFM Preload ...</strong>" );
+                document.getElementById('phases-t4').bgColor='#ffff40'
+                $.ajax({url: "/api",
+                  //dataType: 'application/json',
+                data: {
+                  name: 'vfm-preload'
+                },
+                success: function( data ) {
+                   var returnedData = data;//JSON.parse(data.content);
+                   console.log(returnedData);
+                   document.getElementById('phases-t4').bgColor='#c0ff30'
+                   $( "#vfm-preload-logs" ).html( "<strong>" + returnedData + "</strong>" );
+                    }}); 
+                
+             //break;
+           // }
         }
+  
+        /*var stompClient = null;
+
+        function setConnected(connected) {
+            $("#connect").prop("disabled", connected);
+            $("#disconnect").prop("disabled", !connected);
+            if (connected) {
+                $("#conversation").show();
+            }
+            else {
+                $("#conversation").hide();
+            }
+            $("#greetings").html("");
+        }
+
+        function connect() {
+            var socket = new SockJS('/gs-guide-websocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                setConnected(true);
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/greetings', function (greeting) {
+                    showGreeting(JSON.parse(greeting.body).content);
+                });
+            });
+        }
+
+        function disconnect() {
+            if (stompClient != null) {
+                stompClient.disconnect();
+            }
+            setConnected(false);
+            console.log("Disconnected");
+        }
+
+        function sendName() {
+            stompClient.send("/app/hello", {}, JSON.stringify({'name': $("#name").val()}));
+        }
+
+        function showGreeting(message) {
+        	console.log(message);
+        
+            $("#config-customer-value").append("<tr><td>" + message + "</td></tr>");
+        }
+
+        $(function () {
+            $("form").on('submit', function (e) {
+                e.preventDefault();
+            });
+            $( "#connect" ).click(function() { connect(); });
+            $( "#disconnect" ).click(function() { disconnect(); });
+            $( "#send" ).click(function() { sendName(); });
+        });*/
+        // above breaking all forms
+
+        
+//        function WebSocketTest() {
+//           if ("WebSocket" in window) {
+//              alert("WebSocket is supported by your Browser!");
+              
+              // Let us open a web socket
+//              var ws = new WebSocket("ws://localhost:9998/echo");
+               
+//              ws.onopen = function() {
+                 // Web Socket is connected, send data using send()
+//                 ws.send("Message to send");
+//                 alert("Message is sent...");
+//              };
+               
+//              ws.onmessage = function (evt) { 
+//                 var received_msg = evt.data;
+//                 alert("Message is received...");
+//              };
+               
+//              ws.onclose = function() { 
+                 // websocket is closed.
+//                 alert("Connection is closed..."); 
+//              };
+//           } else {
+              // The browser doesn't support WebSocket
+//              alert("WebSocket NOT supported by your Browser!");
+//           }
+//        }
+
         </script>
 </head>
 <body onload="javascript:load();">
     <div id="north">
         <table><tr>
-        <td><a href="http://wiki.onap.org/display/DW/Developer+Wiki"><img alt="ONAP vFirewall Demo" src="textures/sprites/logo_onap_4x.png" width="160"></a></td>
+        <td><a href="http://wiki.onap.org/display/DW/Developer+Wiki"><img alt="ONAP vFirewall Demo" src="textures/sprites/logo_onap_4x.png" width="180"></a></td>
         <td style="font-weight:bold; text-align: center">&nbsp;Dashboard</td>
         </tr></table>
     </div>
+    <div id="info">Description</div>
     <div id="center">
         <table id="config">
          <tr>
@@ -110,7 +242,7 @@
     </div>
     <div id="d2">d2</div>
     <div id="d3">
-    <script src="https://fb.me/react-15.0.1.js"></script>
+           <script src="https://fb.me/react-15.0.1.js"></script>
     <script src="https://fb.me/react-dom-15.0.1.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
     
@@ -126,7 +258,8 @@
 
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-        var group, camera, scene, renderer, frameStep, maxFrame;
+        var group, camera, scene;
+        var renderer, frameStep, maxFrame;
         var cube1material, cube1state, texture1, texture2, aspect, gridOffset, layerOffset;
         var mouseObjects = []; // for intersections
         var count = 0;
@@ -214,11 +347,34 @@
                 group.add( meshVM );
                 mouseObjects.push(meshVM);
             }
+            
+            
+            // ONAP VMs
+            //var meshVM;
+            //var vmGeo;
+            //var meshMaterialVM;
+            //var meshGeometryVM;
+            vmNames = ["appc", "policy", "dmaap"];
+            //var vmSize = 1;
+            for(var vm=0; vm<3; vm++){
+                vmGeo = new THREE.BoxGeometry( 1*gridOffset,0.5*gridOffset,1*gridOffset);
+                meshMaterialVM = new THREE.MeshLambertMaterial( { color: 0xdfdfff, opacity: 0.9, transparent: false} );
+                meshGeometryVM = new THREE.ConvexBufferGeometry(vmGeo.vertices );
+                meshVM = new THREE.Mesh( meshGeometryVM, meshMaterialVM);
+                meshVM.material.side = THREE.FrontSide; // front faces
+                meshVM.renderOrder = 1;
+                meshVM.position.y = (gridOffset / 4) * vmSize - layerOffset;
+                meshVM.position.x = gridOffset + (((vm - 1) * gridOffset) * 6) - gridOffset;
+                //meshVM.userData.id = "vm" + vm;
+                meshVM.name = vmNames[vm];
+                group.add( meshVM );
+                mouseObjects.push(meshVM);
+            }
                 
             // edges
             // https://stackoverflow.com/questions/18286837/how-to-chain-two-geometric-objects-using-three-js
-            var vmFromNames = ["generator", "firewall", "service-firewall"];
-            var vmToNames = ["firewall", "sink", "firewall"];
+            var vmFromNames = ["generator", "firewall", "service-firewall", "firewall"];
+            var vmToNames = ["firewall", "sink", "firewall", "dmaap"];
             for(var vm=0; vm<vmFromNames.length; vm++) {
                 var startObject = scene.getObjectByName(vmFromNames[vm]);
                 var endObject = scene.getObjectByName(vmToNames[vm]);
@@ -294,7 +450,7 @@
                 var textShape = new THREE.BufferGeometry();
                 var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
                 var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
-                var message = "Virtual Machines";
+                var message = "Virtual Functions";
                 var shapes = font.generateShapes( message, 0.5, 0.1 );
                 var geometry = new THREE.ShapeGeometry( shapes );
                 geometry.computeBoundingBox();
@@ -334,7 +490,7 @@
                 var textShape = new THREE.BufferGeometry();
                 var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
                 var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
-                var message = "Networks";
+                var message = "ONAP Containers";
                 var shapes = font.generateShapes( message, 0.5, 0.1 );
                 var geometry = new THREE.ShapeGeometry( shapes );
                 geometry.computeBoundingBox();
@@ -368,6 +524,7 @@
                 scene.add( lineText );
             } ); //end load function
             window.addEventListener( 'resize', onWindowResize, false );
+            sceneExt = scene;
         }
 
         function createLayer(_ox, _oy, _oz, group, offset, layerColor) {
@@ -391,26 +548,29 @@
             render();
         }
 
+        
         function flashState() {
+            var arrowToFlash = "edge-firewall-dmaap";	
+        
          	if(cube1state < 1) {
            		   //cube1material.map = texture1;
            		   //cube1material.opacity = 1.0;
             	   cube1material.color.set(0xff0060);
-                   document.getElementById('phases-t4').bgColor='#ff0050';
-                   document.getElementById('phases-t5').bgColor='#ff0050';
-            	   document.getElementById('phases-t6').bgColor='#ff0050';
-            	   scene.getObjectByName("edge-firewall-sink").line.material.color.set(0xff0060);
-           		   scene.getObjectByName("edge-firewall-sink").cone.material.color.set(0xff0060);
+                   //document.getElementById('phases-t4').bgColor='#ff0050';
+                   //document.getElementById('phases-t5').bgColor='#ff0050';
+            	   //document.getElementById('phases-t6').bgColor='#ff0050';
+            	   scene.getObjectByName(arrowToFlash).line.material.color.set(0xff0060);
+           		   scene.getObjectByName(arrowToFlash).cone.material.color.set(0xff0060);
            	   } else {
            		   //console.log("flash");
            		   //cube1material.opacity = 0.1;   
                    //cube1material.color.set(0xb0ff04);
                    cube1material.color.set(0xc0ff40);
-                   document.getElementById('phases-t4').bgColor='#d0d0d0';
-                   document.getElementById('phases-t5').bgColor='#d0d0d0';
-                   document.getElementById('phases-t6').bgColor='#d0d0d0';
-                   scene.getObjectByName("edge-firewall-sink").line.material.color.set(0xc0ff40);
-                   scene.getObjectByName("edge-firewall-sink").cone.material.color.set(0xc0ff40);
+                   //document.getElementById('phases-t4').bgColor='#d0d0d0';
+                   //document.getElementById('phases-t5').bgColor='#d0d0d0';
+                   //document.getElementById('phases-t6').bgColor='#d0d0d0';
+                   scene.getObjectByName(arrowToFlash).line.material.color.set(0xc0ff40);
+                   scene.getObjectByName(arrowToFlash).cone.material.color.set(0xc0ff40);
                 } 
                 cube1state = 1 - cube1state;
         }
@@ -419,7 +579,7 @@
            	if(frameStep < 1) {
             	//console.log("test " + frameStep);
             	frameStep = maxFrame;
-            	flashState();
+            	//flashState();
             } else {
             	//console.log("frame: " + frameStep);
             }
@@ -451,27 +611,36 @@
     <table id="phases">
         <tr><td id="phases-t0" style="font-weight:bold; text-align: center">Demo Phase:</td><tr>
             <td id="phases-t1" bgcolor="#ffff50">Initial Config</td>
-            <td><form action="javascript:runButton('config');" method="get"><input type="submit" value="Run"></input></form></td>
-            <td>logs</td>
+            <td><form action="javascript:runButton('init-config');" method="get"><input type="submit" value="Run"></input></form></td>
+            <td id="init-config-logs">logs</td>
         </tr><tr>
             <td id="phases-t2" bgcolor="#20c0ff">Service Creation</td>
-            <td>logs</td>
+            <td><form action="javascript:runButton('service-creation');" method="get"><input type="submit" value="Run"></input></form></td>
+            <td id="service-creation-logs">logs</td>
         </tr><tr>
             <td id="phases-t3" bgcolor="#c0ff30">VNF creation</td>
-            <td>logs</td>
+            <td><form action="javascript:runButton('vnf-creation');" method="get"><input type="submit" value="Run"></input></form></td>
+            <td id="vnf-creation-logs">logs</td>
         </tr><tr>
             <td id="phases-t4" bgcolor="#ff0050">VF Module Preload</td>
-            <td>logs</td>
+            <td><form action="javascript:runButton('vfm-preload');" method="get"><input type="submit" value="Run"></input></form></td>
+            <td id="vfm-preload-logs">logs</td>
         </tr><tr>
             <td id="phases-t5" bgcolor="#ff0050">VF Module Creation</td>
-            <td>logs</td>
+            <td><form action="javascript:runButton('vfm-creation');" method="get"><input type="submit" value="Run"></input></form></td>
+            <td id="vfm-creation-logs">logs</td>
         </tr><tr>
             <td id="phases-t6" bgcolor="#c0ff30">Start Closed Loop</td>
-            <td>logs</td>
+            <td><form action="javascript:runButton('closed-loop');" method="get"><input type="submit" value="Run"></input></form></td>
+            <td id="closed-loop-logs">logs</td>
         </tr></table>
         </td>
         <td id="phase-logs" bgcolor="#cfcf50">
         logs
+        </td></tr></table>
+        <table id="closed-loop-logs-table">
+        <tr><td id="closed-loop-logs-cell" bgcolor="#cfcf70">Closed Loop: 
+        
         </td></tr></table>        
         </div>
 </body>
