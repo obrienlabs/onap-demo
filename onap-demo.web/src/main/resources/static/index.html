@@ -19,7 +19,7 @@
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
         <script>
         // for three js global access
-        var sceneExt;
+        //var sceneExt;
         
         // Timer variables
         var timers = new Array();
@@ -42,12 +42,13 @@
 //              }
 //            });        	
         	if(cell == 1) {
-        	if(timerFrame < 1) {
-                 document.getElementById('phases-t1').bgColor='#d0d0d0';
-             } else {
-                 document.getElementById('phases-t1').bgColor='#ffff40';
-             }
-             timerFrame = 1 - timerFrame;
+        		   if(timerFrame < 1) {
+        			   document.getElementById('phases-t1').bgColor='#d0d0d0';
+        		   } else {
+        			   document.getElementById('phases-t1').bgColor='#ffff40';
+        		   }
+        		   timerFrame = 1 - timerFrame;
+        		   refreshModelFromBackend('vfm-preload');
              } else {
             	 runCollector();
              }
@@ -60,7 +61,7 @@
         	}
 
         function runCollector() {
-            var arrowToFlash = "edge-firewall-dmaap";
+            //var arrowToFlash = "edge-firewall-dmaap";
         
             // change text temp
             //$( "#config-customer-value" ).html( "<strong>Running Collector ...</strong>" );
@@ -78,22 +79,25 @@
             	   $( "#closed-loop-logs-cell" ).append(rec.event.commonEventHeader.eventId + ","//":{\"measurementsForVfScalingFields\":{\"measurementInterval\":10,\"measurementsForVfScalingVersion\":1.1,\"vNicUsageArray\":[{\"multicastPacketsIn\":0,\"bytesIn\":14500,\"unicastPacketsIn\":0,\"multicastPacketsOut\":0,\"broadcastPacketsOut\":0,\"packetsOut\":0,\"bytesOut\":0,\"broadcastPacketsIn\":0,\"packetsIn\":500,\"unicastPacketsOut\":0,\"vNicIdentifier\":\"eth1\"}]},\"commonEventHeader\":{\"reportingEntityName\":\"demofwl01fwl\",\"startEpochMicrosec\":1500656259410865,\"lastEpochMicrosec\":1500656269410865,\"eventId\":\"24170\"
             	    );
             	   $( "#closed-loop-logs" ).html(rec.event.commonEventHeader.eventId);//":{\"measurementsForVfScalingFields\":{\"measurementInterval\":10,\"measurementsForVfScalingVersion\":1.1,\"vNicUsageArray\":[{\"multicastPacketsIn\":0,\"bytesIn\":14500,\"unicastPacketsIn\":0,\"multicastPacketsOut\":0,\"broadcastPacketsOut\":0,\"packetsOut\":0,\"bytesOut\":0,\"broadcastPacketsIn\":0,\"packetsIn\":500,\"unicastPacketsOut\":0,\"vNicIdentifier\":\"eth1\"}]},\"commonEventHeader\":{\"reportingEntityName\":\"demofwl01fwl\",\"startEpochMicrosec\":1500656259410865,\"lastEpochMicrosec\":1500656269410865,\"eventId\":\"24170\"
-                           
+                    
+            	   //refreshModelFromBackend('vfm-preload');
             	   if(closedLoopCounter < 1) {
             		   document.getElementById('phases-t6').bgColor='#ff0050';
-                       sceneExt.getObjectByName(arrowToFlash).line.material.color.set(0xff0060);
-                       sceneExt.getObjectByName(arrowToFlash).cone.material.color.set(0xff0060);
-            		   closedLoopCounter = 1;
+                       //sceneExt.getObjectByName(arrowToFlash).line.material.color.set(0xff0060);
+                       //sceneExt.getObjectByName(arrowToFlash).cone.material.color.set(0xff0060);
+                       scene.getObjectByName( "generator", true ).material.color.set(0xff0050);
             	   } else {
             		   document.getElementById('phases-t6').bgColor='#d0d0d0';
-                       sceneExt.getObjectByName(arrowToFlash).line.material.color.set(0xc0ff40);
-                       sceneExt.getObjectByName(arrowToFlash).cone.material.color.set(0xc0ff40);  
+                       //sceneExt.getObjectByName(arrowToFlash).line.material.color.set(0xc0ff40);
+                       //sceneExt.getObjectByName(arrowToFlash).cone.material.color.set(0xc0ff40); 
+            		   scene.getObjectByName( "generator", true ).material.color.set(0xd0d0d0);
             	   }
             	   closedLoopCounter = 1 - closedLoopCounter;
                }
                 }}); 
         }
-            
+  
+            	   
         function runButton(source) {
             //switch(source) {
             //case "initial-config":
@@ -133,6 +137,7 @@
                    var returnedData = data;//JSON.parse(data.content);
                    console.log(returnedData);
                    document.getElementById('phases-t4').bgColor='#c0ff30'
+
                    $( "#vfm-preload-logs" ).html( "<strong>" + returnedData + "</strong>" );
                     }}); 
                 
@@ -140,6 +145,46 @@
            // }
         }
   
+        
+        function refreshModelFromBackend(source) {//}, aScene, _threejsFlashStates) {
+            var arrowToFlash = "edge-firewall-dmaap";
+            var sourceVM = "dmaap";
+            var targetVM = "firewall";
+            var flashOnColor = 0xcf0060;
+            var flashOffColor = 0xc0cf40;
+       
+             	//console.log("scene: " + scene);
+                $( "#vfm-preload-logs" ).html( "<strong>VFM Preload ...</strong>" );
+                document.getElementById('phases-t4').bgColor='#ffff40'
+                $.ajax({url: "/api",
+                  //dataType: 'application/json',
+                data: {
+                  name: 'vfm-preload'
+                },
+                success: function( data ) {
+                   var returnedData = data;//JSON.parse(data.content);
+                   console.log(returnedData);
+                   document.getElementById('phases-t4').bgColor='#c0ff30'
+                   // flash cubes
+                   var aFirewall = scene.getObjectByName( targetVM, true );
+                   var aDmaap = scene.getObjectByName( sourceVM , true );
+                   if(threejsFlashStates[sourceVM ] < 1) {
+                	    scene.getObjectByName(arrowToFlash).line.material.color.set(flashOnColor);
+                	    scene.getObjectByName(arrowToFlash).cone.material.color.set(flashOnColor);
+                	    aDmaap.material.color.set(flashOnColor);
+                	    aFirewall.material.color.set(flashOnColor);
+                   } else {
+                	   scene.getObjectByName(arrowToFlash).line.material.color.set(flashOffColor);
+                	   scene.getObjectByName(arrowToFlash).cone.material.color.set(flashOffColor);
+                	   aDmaap.material.color.set(flashOffColor);
+                	   aFirewall.material.color.set(flashOffColor);
+                   }
+                   threejsFlashStates[sourceVM ] = 1 - threejsFlashStates[sourceVM ];
+                   
+                   
+                   $( "#vfm-preload-logs" ).html( "<strong>" + returnedData + "</strong>" );
+                    }}); 
+        }
         /*var stompClient = null;
 
         function setConnected(connected) {
@@ -267,7 +312,10 @@
         var colorGreen = 0xc0ff30;
         var colorBlue = 0x20c0ff;
         var colorYellow = 0xffff40;
-        maxFrame = 40; frameStep = 10;
+        var threejsFlashStates = {};
+
+        maxFrame = 100; 
+        frameStep = 30;
         aspect = 2;
         gridOffset = 0.75;
         layerOffset = gridOffset * 5;
@@ -334,6 +382,8 @@
             var vmNames = ["generator", "firewall", "sink"];
             var vmSize = 1;
             for(var vm=0; vm<3; vm++){
+
+                threejsFlashStates[vmNames[vm]] = 0;
                 vmGeo = new THREE.BoxGeometry( 1*gridOffset,0.5*gridOffset,1*gridOffset);
                 meshMaterialVM = new THREE.MeshLambertMaterial( { color: 0xdfdfff, opacity: 0.9, transparent: false} );
                 meshGeometryVM = new THREE.ConvexBufferGeometry(vmGeo.vertices );
@@ -357,7 +407,8 @@
             vmNames = ["appc", "policy", "dmaap"];
             //var vmSize = 1;
             for(var vm=0; vm<3; vm++){
-                vmGeo = new THREE.BoxGeometry( 1*gridOffset,0.5*gridOffset,1*gridOffset);
+            	threejsFlashStates[vmNames[vm]] = 0;
+            	vmGeo = new THREE.BoxGeometry( 1*gridOffset,0.5*gridOffset,1*gridOffset);
                 meshMaterialVM = new THREE.MeshLambertMaterial( { color: 0xdfdfff, opacity: 0.9, transparent: false} );
                 meshGeometryVM = new THREE.ConvexBufferGeometry(vmGeo.vertices );
                 meshVM = new THREE.Mesh( meshGeometryVM, meshMaterialVM);
@@ -376,6 +427,7 @@
             var vmFromNames = ["generator", "firewall", "service-firewall", "firewall"];
             var vmToNames = ["firewall", "sink", "firewall", "dmaap"];
             for(var vm=0; vm<vmFromNames.length; vm++) {
+            	threejsFlashStates[vmNames[vm]] = 0;
                 var startObject = scene.getObjectByName(vmFromNames[vm]);
                 var endObject = scene.getObjectByName(vmToNames[vm]);
                 var startPoint = new THREE.Vector3(startObject.position.x, startObject.position.y, startObject.position.z);
@@ -450,7 +502,7 @@
                 var textShape = new THREE.BufferGeometry();
                 var matDark = new THREE.LineBasicMaterial({color: color,side: THREE.DoubleSide} );
                 var matLite = new THREE.MeshBasicMaterial({color: color,transparent: true,opacity: 0.4, side: THREE.DoubleSide} );
-                var message = "Virtual Functions";
+                var message = "Virtual Function Containers";
                 var shapes = font.generateShapes( message, 0.5, 0.1 );
                 var geometry = new THREE.ShapeGeometry( shapes );
                 geometry.computeBoundingBox();
@@ -555,31 +607,32 @@
          	if(cube1state < 1) {
            		   //cube1material.map = texture1;
            		   //cube1material.opacity = 1.0;
-            	   cube1material.color.set(0xff0060);
+            	 //  cube1material.color.set(0xff0060);
                    //document.getElementById('phases-t4').bgColor='#ff0050';
                    //document.getElementById('phases-t5').bgColor='#ff0050';
             	   //document.getElementById('phases-t6').bgColor='#ff0050';
-            	   scene.getObjectByName(arrowToFlash).line.material.color.set(0xff0060);
-           		   scene.getObjectByName(arrowToFlash).cone.material.color.set(0xff0060);
+            	   //scene.getObjectByName(arrowToFlash).line.material.color.set(0xff0060);
+           		   //scene.getObjectByName(arrowToFlash).cone.material.color.set(0xff0060);
            	   } else {
            		   //console.log("flash");
            		   //cube1material.opacity = 0.1;   
                    //cube1material.color.set(0xb0ff04);
-                   cube1material.color.set(0xc0ff40);
+                 //  cube1material.color.set(0xc0ff40);
                    //document.getElementById('phases-t4').bgColor='#d0d0d0';
                    //document.getElementById('phases-t5').bgColor='#d0d0d0';
                    //document.getElementById('phases-t6').bgColor='#d0d0d0';
-                   scene.getObjectByName(arrowToFlash).line.material.color.set(0xc0ff40);
-                   scene.getObjectByName(arrowToFlash).cone.material.color.set(0xc0ff40);
+                   //scene.getObjectByName(arrowToFlash).line.material.color.set(0xc0ff40);
+                   //scene.getObjectByName(arrowToFlash).cone.material.color.set(0xc0ff40);
                 } 
                 cube1state = 1 - cube1state;
+                //refreshModelFromBackend('vfm-preload');//, scene, threejsFlashStates);
         }
             
         function render() {
            	if(frameStep < 1) {
             	//console.log("test " + frameStep);
             	frameStep = maxFrame;
-            	//flashState();
+            	flashState();
             } else {
             	//console.log("frame: " + frameStep);
             }

@@ -32,7 +32,7 @@ public class ExternalProcessEndpoint {
 			e.printStackTrace();
 		}
 		// simulate
-		try { TimeUnit.SECONDS.sleep(35); } catch (InterruptedException ie) { ie.printStackTrace(); }
+		try { TimeUnit.SECONDS.sleep(1); } catch (InterruptedException ie) { ie.printStackTrace(); }
 		return buffer.toString();
 	}
 	public static void main(String[] args) {
