@@ -8,12 +8,12 @@ import org.onap.demo.Configuration;
 
 public class ExternalProcessEndpoint {
 
-	public String runExternal(String sh, String op0, String op1) {
+	public String runExternal(String sh, String op0, String op1, String op2) {
 		// https://developer.openstack.org/api-guide/quick-start/api-quick-start.html
 		StringBuffer buffer = new StringBuffer();
 		try {
 			ProcessBuilder processBuilder = new ProcessBuilder(
-					Configuration.get(Configuration.LOCAL, "script-dir") +  sh, op0, op1);
+					Configuration.get(Configuration.LOCAL, "script-dir") +  sh, op0, op1, op2);
 			processBuilder.redirectErrorStream(true);
 			Process process = processBuilder.start();
 			InputStreamReader isr = new InputStreamReader(process.getInputStream());
@@ -37,7 +37,7 @@ public class ExternalProcessEndpoint {
 	}
 	public static void main(String[] args) {
 		ExternalProcessEndpoint ep = new ExternalProcessEndpoint();
-		System.out.println(ep.runExternal("openstack_port_list.sh","network", "list"));
+		System.out.println(ep.runExternal("openstack_port_list.sh","network", "list", "op2"));
 	
 	}
 
