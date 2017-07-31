@@ -18,12 +18,12 @@ public class JAXRSClient {
 		Client client = null;
 		WebTarget rootTarget = null;
 		if(isSSL) {
-			SslConfigurator sslConfig = SslConfigurator.newInstance();
-			/*SslConfigurator sslConfig = SslConfigurator.newInstance()
-					.trustStoreFile("/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/security/cacerts")
-					.trustStorePassword("changeit")
-					.keyStoreFile("/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/security/cacerts")
-					.keyPassword("changeit");*/
+			//SslConfigurator sslConfig = SslConfigurator.newInstance();
+			SslConfigurator sslConfig = SslConfigurator.newInstance()
+					.trustStoreFile("/opt/KeyStore.jks")
+					.trustStorePassword("changeme")//"changeit")
+					.keyStoreFile("/opt/KeyStore.jks")
+					.keyPassword("changeme");//"changeit");
 			SSLContext sslContext = sslConfig.createSSLContext();
 			// fix java.security.cert.CertificateException: No subject alternative names present
 			HostnameVerifier verifier = new HostnameVerifier() {

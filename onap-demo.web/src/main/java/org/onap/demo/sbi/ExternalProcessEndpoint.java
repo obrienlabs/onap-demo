@@ -8,12 +8,39 @@ import org.onap.demo.Configuration;
 
 public class ExternalProcessEndpoint {
 
+	public String runExternalAbsolute(String sh) {
+		ProcessBuilder processBuilder = new ProcessBuilder(sh);
+		System.out.println("Running: " + sh);
+		return runExternal(processBuilder);
+	}
+
+	public String runExternal(String sh, String op0) {
+		ProcessBuilder processBuilder = new ProcessBuilder(
+				Configuration.get(Configuration.LOCAL, "script-dir") +  sh, op0);
+		System.out.println("Running: " + Configuration.get(Configuration.LOCAL, "script-dir") +  sh + " " + op0 );
+		return runExternal(processBuilder);
+	}
+	
+	public String runExternal(String sh, String op0, String op1) {
+		ProcessBuilder processBuilder = new ProcessBuilder(
+				Configuration.get(Configuration.LOCAL, "script-dir") +  sh, op0, op1);
+		System.out.println("Running: " + Configuration.get(Configuration.LOCAL, "script-dir") +  sh + " " + op0 + " " + op1 );
+		return runExternal(processBuilder);
+	}
+	
 	public String runExternal(String sh, String op0, String op1, String op2) {
+		ProcessBuilder processBuilder = new ProcessBuilder(
+				Configuration.get(Configuration.LOCAL, "script-dir") +  sh, op0, op1, op2);
+		System.out.println("Running: " + Configuration.get(Configuration.LOCAL, "script-dir") +  sh + " " + op0 + " " + op1 + " " + op2);
+		return runExternal(processBuilder);
+	}
+	
+	
+	public String runExternal(ProcessBuilder processBuilder) {
 		// https://developer.openstack.org/api-guide/quick-start/api-quick-start.html
 		StringBuffer buffer = new StringBuffer();
 		try {
-			ProcessBuilder processBuilder = new ProcessBuilder(
-					Configuration.get(Configuration.LOCAL, "script-dir") +  sh, op0, op1, op2);
+
 			processBuilder.redirectErrorStream(true);
 			Process process = processBuilder.start();
 			InputStreamReader isr = new InputStreamReader(process.getInputStream());

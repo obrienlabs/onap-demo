@@ -76,12 +76,12 @@
                     
             	   //refreshModelFromBackend('vfm-preload');
             	   if(closedLoopCounter < 1) {
-            		   document.getElementById('phases-t6').bgColor='#ff0050';
+            		   document.getElementById('closed-loop-logs').bgColor='#cf0050';
                        //sceneExt.getObjectByName(arrowToFlash).line.material.color.set(0xff0060);
                        //sceneExt.getObjectByName(arrowToFlash).cone.material.color.set(0xff0060);
-                       scene.getObjectByName( "generator", true ).material.color.set(0xff0050);
+                       scene.getObjectByName( "generator", true ).material.color.set(0xcfcf30);
             	   } else {
-            		   document.getElementById('phases-t6').bgColor='#d0d0d0';
+            		   document.getElementById('closed-loop-logs').bgColor='#d0d0d0';
                        //sceneExt.getObjectByName(arrowToFlash).line.material.color.set(0xc0ff40);
                        //sceneExt.getObjectByName(arrowToFlash).cone.material.color.set(0xc0ff40); 
             		   scene.getObjectByName( "generator", true ).material.color.set(0xd0d0d0);
@@ -96,6 +96,37 @@
         function modifyInputs() {
         	
         }
+        
+        function getCustomer() {
+            $.ajax({url: "/api",
+              //dataType: 'application/json',
+            data: {
+              action: 'customer-read'
+            },
+            success: function( data ) {
+               var returnedData = JSON.parse(data.content);
+               console.log(returnedData);
+               document.getElementById('config-customer-value').bgColor='#c0ff30'
+               $( "#config-customer-value" ).html( "<strong>" + returnedData['global-customer-id'] + "</strong>" );
+            }}); 
+        	
+        }
+       
+        function switchDC() {
+            $.ajax({url: "/api",
+              //dataType: 'application/json',
+            data: {
+              action: 'dc-switch'
+            },
+            success: function( data ) {
+               var returnedData = data.content;//JSON.parse(data.content);
+               console.log(returnedData);
+               //document.getElementById('config-customer-value').bgColor='#c0ff30'
+               document.getElementById('dc-button').value = returnedData;
+            }}); 
+            
+        }
+        
         function runMonitoring() {
         	var lState = "OFF";
         	
@@ -110,7 +141,7 @@
         	// check inputs
         	var network = document.getElementById('onap-network').value;
         	console.log(network);
-        	$( "#config-vfmodule-value" ).html(network);
+        	//$( "#config-vfmodule-value" ).html(network);
         }
         
         function runInitConfig(source) {
@@ -123,10 +154,11 @@
                   action: 'init-config'
                 },
                 success: function( data ) {
-                   var returnedData = data;//JSON.parse(data.content);
+                   var returnedData = data.content;//JSON.parse(data.content);
                    console.log(returnedData);
                    document.getElementById('phases-t1').bgColor='#c0ff30'
                    $( "#init-config-logs" ).html( "<strong>" + returnedData + "</strong>" );
+                   getCustomer();
                 }}); 
         }
   
@@ -144,6 +176,7 @@
                    console.log(returnedData);
                    document.getElementById('phases-t2a').bgColor='#c0ff30'
                    $( "#service-deploy-read-logs" ).html( "<strong>" + returnedData + "</strong>" );
+                   getCustomer();
                 }}); 
         }
 
@@ -161,6 +194,7 @@
                    console.log(returnedData);
                    document.getElementById('phases-t2b').bgColor='#c0ff30'
                    $( "#service-creation-read-logs" ).html( "<strong>" + returnedData + "</strong>" );
+                   getCustomer();
                 }}); 
         }
 
@@ -191,11 +225,12 @@
                   action: 'vfm-preload'
                 },
                 success: function( data ) {
-                   var returnedData = data;//JSON.parse(data.content);
+                   var returnedData = data.content;//JSON.parse(data.content);
                    console.log(returnedData);
                    document.getElementById('phases-t4').bgColor='#c0ff30'
                    $( "#vfm-preload-logs" ).html( "<strong>" + returnedData + "</strong>" );
                 }}); 
+                // read http://{{sdnc_ip}}:8282/restconf/config/VNF-API:preload-vnfs
         }
 
         function runVfmCreationRead(source) {
@@ -225,7 +260,7 @@
                   action: 'closed-loop'
                 },
                 success: function( data ) {
-                   var returnedData = data;//JSON.parse(data.content);
+                   var returnedData = data.content;//JSON.parse(data.content);
                    console.log(returnedData);
                    document.getElementById('phases-t6').bgColor='#c0ff30'
                    $( "#closed-loop-logs" ).html( "<strong>" + returnedData + "</strong>" );
@@ -384,18 +419,22 @@
     <div id="center">
         <table id="config">
          <tr>
-            <td id="config-customer-key" style="font-weight:bold; text-align: left" bgcolor="#ffff50">Customer:</td>
+            <td id="dc-key" style="font-weight:bold; text-align: left" bgcolor="#cfdf50">DC:
+            </td>
+            <td id="dc-value"style="font-weight:italic; text-align: right" bgcolor="#ffff50"><form action="javascript:switchDC();" method="get">
+            <input id="dc-button" type="submit" value="LOCAL"></input></form></td>
+            <td id="config-customer-key" style="font-weight:bold; text-align: left" bgcolor="#cfcf50">Customer:</td>
             <td id="config-customer-value"style="font-weight:italic; text-align: right" bgcolor="#ffff50">none</td>
-            <td id="config-service-key"style="font-weight:bold; text-align: left" bgcolor="#ffff50">Service:</td>
+            <td id="config-service-key"style="font-weight:bold; text-align: left" bgcolor="#cfcf50">Service:</td>
             <td id="config-service-value"style="font-weight:italic; text-align: right" bgcolor="#ffff50">none</td>
-            <td id="config-vnf-key"style="font-weight:bold; text-align: left" bgcolor="#ffff50">VNF:</td>
+            <td id="config-vnf-key"style="font-weight:bold; text-align: left" bgcolor="#cfcf50">VNF:</td>
             <td id="config-vnf-value"style="font-weight:italic; text-align: right" bgcolor="#ffff50">none</td>
-            <td id="config-vfmodule-key"style="font-weight:bold; text-align: left"bgcolor="#ffff50">VF-Module:</td>
+            <td id="config-vfmodule-key"style="font-weight:bold; text-align: left"bgcolor="#cfcf50">VF-Module:</td>
             <td id="config-vfmodule-value"style="font-weight:italic; text-align: right">none</td>
 
         </tr></table>        
     </div>
-    <div id="d2">d2</div>
+    <div id="d2"></div>
     <div id="d3">
            <script src="https://fb.me/react-15.0.1.js"></script>
     <script src="https://fb.me/react-dom-15.0.1.js"></script>
@@ -534,8 +573,9 @@
                 
             // edges
             // https://stackoverflow.com/questions/18286837/how-to-chain-two-geometric-objects-using-three-js
-            var vmFromNames = ["generator", "firewall", "service-firewall", "firewall"];
-            var vmToNames = ["firewall", "sink", "firewall", "dmaap"];
+            var vmFromNames = ["generator", "firewall", "service-firewall", "firewall", "appc",      "policy","policy"];
+            var vmToNames =   ["firewall",  "sink",     "firewall",         "dmaap",    "generator", "dmaap", "appc"];
+            var edgeColors = [  colorRed,    colorRed,   colorGreen,          colorRed,   colorRed,    colorBlue, colorBlue];
             for(var vm=0; vm<vmFromNames.length; vm++) {
             	threejsFlashStates[vmNames[vm]] = 0;
                 var startObject = scene.getObjectByName(vmFromNames[vm]);
@@ -543,7 +583,7 @@
                 var startPoint = new THREE.Vector3(startObject.position.x, startObject.position.y, startObject.position.z);
                 var endPoint   = new THREE.Vector3(endObject.position.x, endObject.position.y, endObject.position.z);
                 var direction = new THREE.Vector3().subVectors(endPoint, startPoint).normalize();
-                var arrow = new THREE.ArrowHelper(direction, startPoint, startPoint.distanceTo(endPoint), colorRed );
+                var arrow = new THREE.ArrowHelper(direction, startPoint, startPoint.distanceTo(endPoint), edgeColors[vm] );
                 arrow.line.material.linewidth = 4; // no effect on windows
                 var vName = "edge-" + vmFromNames[vm] + "-" + vmToNames[vm];
                 console.log(vName);
@@ -700,7 +740,8 @@
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight * aspect;
             camera.updateProjectionMatrix();
-            renderer.setSize( window.innerWidth / 2, window.innerHeight / (2 * aspect));
+            //renderer.setSize( window.innerWidth / 2, window.innerHeight / (2 * aspect));
+            renderer.setSize( window.innerWidth / 1, window.innerHeight / (1 * aspect));
         }
 
         function animate() {
@@ -773,41 +814,42 @@
             <tr><td>
     <table id="phases">
         <tr><td id="phases-t0" style="font-weight:bold; text-align: center">Demo Phase:</td><tr>
-            <td id="phases-t1" bgcolor="#ffff50">Initial Config</td>
+            <td id="phases-t1" bgcolor="#dfdf50">Initial Config</td>
             <td><form action="javascript:runInitConfig('init-config');" method="get"><input type="submit" value="Run"></input></form></td>
-            <td id="init-config-logs">logs</td>
+            <td id="init-config-logs"></td>
         </tr><tr>
             <td id="phases-t2a" bgcolor="#20c0ff">Service Deploy (read)</td>
             <td><form action="javascript:runServiceDeployRead('service-deploy-read');" method="get"><input type="submit" value="Verify"></input></form></td>
-            <td id="service-deploy-read-logs">logs</td>
+            <td id="service-deploy-read-logs"></td>
         </tr><tr>
             <td id="phases-t2b" bgcolor="#20c0ff">Service Creation (read)</td>
             <td><form action="javascript:runServiceCreationRead('service-creation-read');" method="get"><input type="submit" value="Verify"></input></form></td>
-            <td id="service-creation-read-logs">logs</td>
+            <td id="service-creation-read-logs"></td>
         </tr><tr>
-            <td id="phases-t3" bgcolor="#c0ff30">VNF Creation (read)</td>
+            <td id="phases-t3" bgcolor="#20c0ff">VNF Creation (read)</td>
             <td><form action="javascript:runVnfCreationRead('vnf-creation-read');" method="get"><input type="submit" value="Verify"></input></form></td>
-            <td id="vnf-creation-read-logs">logs</td>
+            <td id="vnf-creation-read-logs"></td>
         </tr><tr>
-            <td id="phases-t4" bgcolor="#ff0050">VF Module Preload</td>
+            <td id="phases-t4" bgcolor="#20c0ff">VF Module Preload</td>
             <td><form action="javascript:runVfmPreload('vfm-preload');" method="get"><input type="submit" value="Run"></input></form></td>
-            <td id="vfm-preload-logs">logs</td>
+            <td id="vfm-preload-logs"></td>
         </tr><tr>
-            <td id="phases-t5" bgcolor="#ff0050">VF Module Creation (read)</td>
+            <td id="phases-t5" bgcolor="#20c0ff">VF Module Creation (read)</td>
             <td><form action="javascript:runVfmCreationRead('vfm-creation-read');" method="get"><input type="submit" value="Verify"></input></form></td>
-            <td id="vfm-creation-read-logs">logs</td>
-        </tr><tr>
-            <td id="phases-t6" bgcolor="#c0ff30">Start Closed Loop</td>
-            <td><form action="javascript:runClosedLoop('closed-loop');" method="get"><input type="submit" value="Run"></input></form></td>
-            <td id="closed-loop-logs">logs</td>
+            <td id="vfm-creation-read-logs"></td>
         </tr><tr>
             <td id="monitor-button" bgcolor="#ff0050">Monitoring</td>
             <td><form action="javascript:runMonitoring();" method="get"><input id="run-monitoring-button" type="submit" value="OFF"></input></form></td>
-            <td id="monitoring-logs">logs</td>
-        </tr></table>
+            <td id="monitoring-logs"></td>
+        </tr><tr>
+            <td id="phases-t6" bgcolor="#20c0ff">Start Closed Loop</td>
+            <td><form action="javascript:runClosedLoop('closed-loop');" method="get"><input type="submit" value="Run"></input></form></td>
+            <td id="closed-loop-logs"></td>
+            </tr>
+        </table>
         </td>
         <td id="phase-logs" bgcolor="#cfcf50">
-        logs
+        
         </td></tr></table>
         <table id="closed-loop-logs-table">
         <tr><td id="closed-loop-logs-cell" bgcolor="#cfcf70">Closed Loop: 
